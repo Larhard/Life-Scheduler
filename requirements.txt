@@ -1,2 +1,6 @@
 Flask
+Flask-Login
+oauthlib
+pyopenssl
 python-dotenv
+requests

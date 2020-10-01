@@ -13,6 +13,8 @@ class User(UserMixin, db.Model):
 
     is_approved = db.Column(db.Boolean, default=False)
 
+    trello_secret = db.Column(db.String(120))
+
     def __init__(self, email=None, name=None, given_name=None, family_name=None, picture=None):
         self.email = email
         self.name = name

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+    {%- block meta -%}{%- endblock -%}
+
+    <title>{%- block title -%}Life Scheduler{%- endblock -%}</title>
+
+    {%- block head -%}{%- endblock -%}
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet" type="text/css">
+    {%- block css -%}{%- endblock -%}
+</head>
+<body>
+{%- block body -%}
+    {%- block content -%}{%- endblock -%}
+{%- endblock -%}
+{%- block scripts -%}{%- endblock -%}
+</body>
+</html>

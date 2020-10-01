@@ -1,7 +1,8 @@
 Flask
 Flask-Login
-Flask-SQLAlchemy
 Flask-Migrate
+Flask-SQLAlchemy
+libsass
 oauthlib
 pyopenssl
 python-dotenv

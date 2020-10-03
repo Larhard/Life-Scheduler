@@ -1,1 +1,1 @@
-FLASK_APP = life_scheduler.app
+FLASK_APP = life_scheduler

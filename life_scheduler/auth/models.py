@@ -1,6 +1,6 @@
 from flask_login import UserMixin
 
-from life_scheduler.app import db, login_manager
+from life_scheduler import db, login_manager
 
 
 class User(UserMixin, db.Model):
@@ -12,8 +12,6 @@ class User(UserMixin, db.Model):
     picture = db.Column(db.String(120))
 
     is_approved = db.Column(db.Boolean, default=False)
-
-    trello_secret = db.Column(db.String(120))
 
     def __init__(self, email=None, name=None, given_name=None, family_name=None, picture=None):
         self.email = email
@@ -31,7 +29,7 @@ class User(UserMixin, db.Model):
 
     @classmethod
     def get_or_create(cls, user):
-        result = cls.query.filter_by(email=user.email).first()
+        result = cls.get_by_email(user.email)
 
         if not result:
             db.session.add(user)
@@ -41,8 +39,8 @@ class User(UserMixin, db.Model):
         return result
 
     @classmethod
-    def get(cls, user):
-        result = cls.query.filter_by(email=user.email).first()
+    def get_by_email(cls, email):
+        result = cls.query.filter_by(email=email).first()
 
         return result
 

@@ -16,9 +16,9 @@ class Config:
 
     TRELLO_API_KEY = os.getenv("TRELLO_API_KEY")
     TRELLO_API_SECRET = os.getenv("TRELLO_API_SECRET")
-    TRELLO_AUTHORIZATION_URL = "https://trello.com/1/authorize"
+    TRELLO_TOKEN_REQUEST_URL = "https://trello.com/1/OAuthGetRequestToken"
+    TRELLO_TOKEN_AUTHORIZATION_URL = "https://trello.com/1/OAuthAuthorizeToken"
+    TRELLO_ACCESS_TOKEN_REQUEST_URL = "https://trello.com/1/OAuthGetAccessToken"
 
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL") or "sqlite:///" + os.path.join(basedir, "db.sqlite3")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-    LOGIN_DISABLED = True

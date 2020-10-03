@@ -18,7 +18,7 @@ def login():
 
     request_uri = oauth2_client.prepare_request_uri(
         authorization_endpoint,
-        redirect_uri=request.base_url + "/callback",
+        redirect_uri=url_for("auth.login_callback", _external=True),
         scope=["openid", "email", "profile"],
     )
     return redirect(request_uri)
@@ -68,6 +68,7 @@ def login_callback():
 
         user = User.get_or_create(user)
 
+        current_app.logger.info(f"User logged in: {user}")
         login_user(user)
         return redirect(url_for("board.index"))
 
@@ -84,14 +85,12 @@ def logout():
 @blueprint.cli.command("approve")
 @click.argument("email")
 def approve(email):
-    user = User(email=email)
-    user = User.get(user)
+    user = User.get_by_email(email)
     user.set_approved(True)
 
 
 @blueprint.cli.command("block")
 @click.argument("email")
 def block(email):
-    user = User(email=email)
-    user = User.get(user)
+    user = User.get_by_email(email)
     user.set_approved(False)

@@ -1,8 +1,8 @@
-import requests
+from flask import current_app
+from requests_oauthlib import OAuth1
 from sqlalchemy.orm import backref
 
 from life_scheduler import db
-from life_scheduler.trello.auth import get_oauth1_client
 
 
 class Trello(db.Model):
@@ -18,21 +18,26 @@ class Trello(db.Model):
         self.secret = secret
         self.user = user
 
-    def get_oauth1_client(self):
-        return get_oauth1_client(
+    @property
+    def auth(self):
+        client_key = current_app.config["TRELLO_API_KEY"]
+        client_secret = current_app.config["TRELLO_API_SECRET"]
+
+        return OAuth1(
+            client_key=client_key,
+            client_secret=client_secret,
             resource_owner_key=self.token,
             resource_owner_secret=self.secret,
         )
 
-    def get(self, url):
-        client = self.get_oauth1_client()
-        uri, headers, body = client.sign(url)
-        response = requests.get(uri, headers=headers, data=body)
-        return response.content
+    @classmethod
+    def create(cls, trello):
+        db.session.add(trello)
+        db.session.commit()
 
     @classmethod
-    def create(cls, trello_oauth_token):
-        db.session.add(trello_oauth_token)
+    def remove(cls, trello):
+        db.session.delete(trello)
         db.session.commit()
 
     @classmethod
@@ -49,14 +54,20 @@ class TrelloTemporaryToken(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     user = db.relationship("User")
 
-    def __init__(self, token, secret, user, expires=None):
+    def __init__(self, token=None, secret=None, user=None, expires=None):
         self.token = token
         self.secret = secret
         self.user = user
         self.expires = expires
 
-    def get_oauth1_client(self):
-        return get_oauth1_client(
+    @property
+    def auth(self):
+        client_key = current_app.config["TRELLO_API_KEY"]
+        client_secret = current_app.config["TRELLO_API_SECRET"]
+
+        return OAuth1(
+            client_key=client_key,
+            client_secret=client_secret,
             resource_owner_key=self.token,
             resource_owner_secret=self.secret,
         )

@@ -7,3 +7,4 @@ oauthlib
 pyopenssl
 python-dotenv
 requests
+requests-oauthlib

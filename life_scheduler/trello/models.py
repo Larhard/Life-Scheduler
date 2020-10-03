@@ -1,5 +1,5 @@
 from flask import current_app
-from requests_oauthlib import OAuth1
+from requests_oauthlib import OAuth1Session
 from sqlalchemy.orm import backref
 
 from life_scheduler import db
@@ -18,16 +18,16 @@ class Trello(db.Model):
         self.secret = secret
         self.user = user
 
-    @property
-    def auth(self):
+    def get_oauth(self, **kwargs):
         client_key = current_app.config["TRELLO_API_KEY"]
         client_secret = current_app.config["TRELLO_API_SECRET"]
 
-        return OAuth1(
+        return OAuth1Session(
             client_key=client_key,
             client_secret=client_secret,
             resource_owner_key=self.token,
             resource_owner_secret=self.secret,
+            **kwargs
         )
 
     @classmethod
@@ -60,16 +60,16 @@ class TrelloTemporaryToken(db.Model):
         self.user = user
         self.expires = expires
 
-    @property
-    def auth(self):
+    def get_oauth(self, **kwargs):
         client_key = current_app.config["TRELLO_API_KEY"]
         client_secret = current_app.config["TRELLO_API_SECRET"]
 
-        return OAuth1(
+        return OAuth1Session(
             client_key=client_key,
             client_secret=client_secret,
             resource_owner_key=self.token,
             resource_owner_secret=self.secret,
+            **kwargs
         )
 
     @classmethod

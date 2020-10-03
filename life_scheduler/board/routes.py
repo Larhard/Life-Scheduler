@@ -11,4 +11,5 @@ blueprint = Blueprint("board", __name__, url_prefix="/board")
 @login_required
 @approval_required
 def index():
-    return requests.get("https://trello.com/1/members/me/boards/", auth=current_user.trello.auth).content
+    oauth = current_user.trello.get_oauth()
+    return oauth.get("https://trello.com/1/members/me/boards/").content

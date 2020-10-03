@@ -1,8 +1,9 @@
 import click
 import requests
-from flask import request, redirect, current_app, url_for
+from flask import request, redirect, current_app, url_for, session
 from flask.blueprints import Blueprint
 from flask_login import login_user, logout_user, current_user
+from requests_oauthlib import OAuth2Session
 
 from life_scheduler.auth.google import get_google_provider_config, get_google_oauth2_client
 from life_scheduler.auth.models import User
@@ -13,15 +14,24 @@ blueprint = Blueprint("auth", __name__)
 @blueprint.route("/login")
 def login():
     provider_config = get_google_provider_config()
-    authorization_endpoint = provider_config["authorization_endpoint"]
-    oauth2_client = get_google_oauth2_client()
+    authorization_url = provider_config["authorization_endpoint"]
 
-    request_uri = oauth2_client.prepare_request_uri(
-        authorization_endpoint,
-        redirect_uri=url_for("auth.login_callback", _external=True),
-        scope=["openid", "email", "profile"],
+    client_id = current_app.config["GOOGLE_CLIENT_ID"]
+    scope = ["openid", "email", "profile"]
+    redirect_uri = url_for("auth.login_callback", _external=True)
+
+    oauth = OAuth2Session(
+        client_id=client_id,
+        scope=scope,
+        redirect_uri=redirect_uri,
     )
-    return redirect(request_uri)
+
+    url, state = oauth.authorization_url(authorization_url)
+
+    current_app.logger.info(f"url = {url}")
+
+    session["oauth_state"] = state
+    return redirect(url)
 
 
 @blueprint.route("/login/callback")
@@ -29,33 +39,26 @@ def login_callback():
     code = request.args.get("code")
 
     provider_config = get_google_provider_config()
-    token_endpoint = provider_config["token_endpoint"]
+    token_url = provider_config["token_endpoint"]
 
-    oauth2_client = get_google_oauth2_client()
-    google_client_id = current_app.config["GOOGLE_CLIENT_ID"]
-    google_client_secret = current_app.config["GOOGLE_CLIENT_SECRET"]
+    client_id = current_app.config["GOOGLE_CLIENT_ID"]
+    client_secret = current_app.config["GOOGLE_CLIENT_SECRET"]
 
-    token_url, headers, body = oauth2_client.prepare_token_request(
-        token_endpoint,
+    oauth = OAuth2Session(
+        client_id=client_id,
+        state=session["oauth_state"],
+        redirect_uri=request.base_url,
+    )
+
+    oauth.fetch_token(
+        token_url=token_url,
+        client_secret=client_secret,
         authorization_response=request.url,
-        redirect_url=request.base_url,
         code=code,
     )
 
-    response = requests.post(
-        token_url,
-        headers=headers,
-        data=body,
-        auth=(google_client_id, google_client_secret),
-    )
-
-    oauth2_client.parse_request_body_response(response.content)
-
-    user_info_endpoint = provider_config["userinfo_endpoint"]
-    uri, headers, body = oauth2_client.add_token(user_info_endpoint)
-    user_info_response = requests.get(uri, headers=headers, data=body)
-
-    user_info = user_info_response.json()
+    user_info_url = provider_config["userinfo_endpoint"]
+    user_info = oauth.get(user_info_url).json()
 
     if user_info.get("email_verified"):
         user = User(

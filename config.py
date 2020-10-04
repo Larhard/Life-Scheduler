@@ -22,3 +22,5 @@ class Config:
 
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL") or "sqlite:///" + os.path.join(basedir, "db.sqlite3")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    DEBUG_FAST_LOGIN = os.getenv("DEBUG_FAST_LOGIN")

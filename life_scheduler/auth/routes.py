@@ -1,11 +1,11 @@
 import click
-import requests
 from flask import request, redirect, current_app, url_for, session
 from flask.blueprints import Blueprint
-from flask_login import login_user, logout_user, current_user
+from flask_login import login_user, logout_user
 from requests_oauthlib import OAuth2Session
 
-from life_scheduler.auth.google import get_google_provider_config, get_google_oauth2_client
+from life_scheduler import login_manager
+from life_scheduler.auth.google import get_google_provider_config
 from life_scheduler.auth.models import User
 
 blueprint = Blueprint("auth", __name__)
@@ -13,6 +13,12 @@ blueprint = Blueprint("auth", __name__)
 
 @blueprint.route("/login")
 def login():
+    debug_fast_login = current_app.config["DEBUG_FAST_LOGIN"]
+    if debug_fast_login:
+        user = User.get_by_email(debug_fast_login)
+        login_user(user)
+        return redirect(url_for("board.index"))
+
     provider_config = get_google_provider_config()
     authorization_url = provider_config["authorization_endpoint"]
 
@@ -83,6 +89,11 @@ def login_callback():
 def logout():
     logout_user()
     return redirect(url_for("board.index"))
+
+
+@login_manager.unauthorized_handler
+def unauthorized_handler():
+    return redirect(url_for("auth.login"))
 
 
 @blueprint.cli.command("approve")

@@ -18,7 +18,7 @@ class Trello(db.Model):
         self.secret = secret
         self.user = user
 
-    def get_oauth(self, **kwargs):
+    def get_session(self, **kwargs):
         client_key = current_app.config["TRELLO_API_KEY"]
         client_secret = current_app.config["TRELLO_API_SECRET"]
 
@@ -60,7 +60,7 @@ class TrelloTemporaryToken(db.Model):
         self.user = user
         self.expires = expires
 
-    def get_oauth(self, **kwargs):
+    def get_session(self, **kwargs):
         client_key = current_app.config["TRELLO_API_KEY"]
         client_secret = current_app.config["TRELLO_API_SECRET"]
 

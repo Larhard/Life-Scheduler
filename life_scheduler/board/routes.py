@@ -1,5 +1,4 @@
-import requests
-from flask import Blueprint, render_template
+from flask import Blueprint
 from flask_login import login_required, current_user
 
 from life_scheduler.auth.utils import approval_required
@@ -11,5 +10,5 @@ blueprint = Blueprint("board", __name__, url_prefix="/board")
 @login_required
 @approval_required
 def index():
-    oauth = current_user.trello.get_oauth()
+    oauth = current_user.trello.get_session()
     return oauth.get("https://trello.com/1/members/me/boards/").content

@@ -11,7 +11,8 @@
     </header>
 
     <div class="container-fluid bg-light">
-        <ul id="quest-list" class="list-group"></ul>
+        <ul id="quest-list" class="list-group">
+        </ul>
     </div>
 {% endblock %}
 
@@ -247,6 +248,8 @@
         pullButton.on("click", doPull);
         archivizeButton.on("click", doArchivize);
         $(document).on("click", ".quest-item", doToggleDone);
+
+        questList.sortable()
 
         $(function () {
             doPull();

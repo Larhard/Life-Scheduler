@@ -28,10 +28,11 @@ class User(UserMixin, db.Model):
         return f"<User {self.email}>"
 
     @classmethod
-    def get_or_create(cls, user):
-        result = cls.get_by_email(user.email)
+    def get_or_create(cls, user_dict):
+        result = cls.get_by_email(user_dict["email"])
 
         if not result:
+            user = User(**user_dict)
             db.session.add(user)
             db.session.commit()
             result = user

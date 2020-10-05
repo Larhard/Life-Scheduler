@@ -1,12 +1,150 @@
 {% extends "_base.html" %}
 
 {% block content %}
-    <div class="board">
-        <ul id="today"></ul>
+    <header class="navbar sticky-top bg-dark" role="navigation">
+        <button id="pull-button" class="btn btn-primary" type="button">
+            Pull
+        </button>
+    </header>
+
+    <div class="container-fluid bg-light">
+        <ul id="quest-list" class="list-group"></ul>
     </div>
 {% endblock %}
 
 {% block scripts %}
     {{ super() }}
-    <script src="{{ url_for("static", filename="js/board.js") }}"></script>
+    <script>
+        const pullButton = $("#pull-button");
+        const pullButtonReadyHTML = pullButton.html();
+        const pullButtonInProgressHTML = '<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Pulling...';
+        const pullButtonFailedHTML = "Pull failed";
+
+        const autoPullInterval = 60 * 1000;
+
+        const questList = $("#quest-list")
+
+        let pullInProgress = false;
+
+        function doPull() {
+            return doInitializeQuestPull()
+                .then(doInvokeQuestPull)
+                .then(doUpdateQuestList)
+                .then(doFinishPull)
+                .fail(doNotifyPullFailure);
+        }
+
+        function doInitializeQuestPull() {
+            let deferred = $.Deferred();
+
+            if (pullInProgress) {
+                return;
+            }
+            pullInProgress = true;
+            console.log("Pulling...")
+            pullButton.addClass("disabled")
+            pullButton.html(pullButtonInProgressHTML);
+
+            deferred.resolve()
+
+            return deferred;
+        }
+
+        function doInvokeQuestPull() {
+            return $.get("{{ url_for("board_api.quests_pull") }}");
+        }
+
+        function doUpdateQuestList() {
+            return $.getJSON("{{ url_for("board_api.quests_today") }}")
+                .done(function (data) {
+                    updateQuestList(data);
+                });
+        }
+
+        function doFinishPull() {
+            let deferred = $.Deferred();
+
+            pullButton.html(pullButtonReadyHTML);
+            pullButton.addClass("btn-primary");
+            pullButton.removeClass("btn-danger");
+            pullButton.removeClass("disabled")
+            pullInProgress = false;
+
+            deferred.resolve();
+            return deferred
+        }
+
+        function doNotifyPullFailure() {
+            let deferred = $.Deferred();
+
+            pullButton.html(pullButtonFailedHTML);
+            pullButton.addClass("btn-danger");
+            pullButton.removeClass("btn-primary");
+            pullButton.removeClass("disabled");
+            pullInProgress = false;
+
+            deferred.resolve();
+            return deferred
+        }
+
+        function getQuestIdentifier(questId) {
+            return `quest-${questId}`;
+        }
+
+        function htmlEscape(str) {
+            return $("<div>").text(str).html();
+        }
+
+        function formatQuestBody(data) {
+            return `${htmlEscape(data.name)}`;
+        }
+
+        function formatQuestItem(data) {
+            return `<li id="${getQuestIdentifier(data.id)}" class="list-group-item">${formatQuestBody(data)}</li>`;
+        }
+
+        function updateQuest(quest, data) {
+            quest.html(formatQuestBody(data));
+        }
+
+        function createQuest(data) {
+            questList.append(formatQuestItem(data));
+        }
+
+        function createOrUpdateQuest(data) {
+            let identifier = getQuestIdentifier(data.id);
+            let quest = questList.find(`[id="${identifier}"]`);
+            if (quest.length > 0) {
+                updateQuest(quest, data);
+            } else {
+                createQuest(data);
+            }
+        }
+
+        function removeOutdatedQuests(data) {
+            const ids = $.map(data, x => getQuestIdentifier(x.id));
+            console.log(ids)
+            questList.find("li").each(function () {
+                const id = $(this).attr("id");
+                console.log(id)
+                if (! ids.includes(id)) {
+                    $(this).remove();
+                }
+            });
+        }
+
+        function updateQuestList(data) {
+            data.forEach(questData => createOrUpdateQuest(questData));
+            removeOutdatedQuests(data);
+        }
+
+        pullButton.on("click", function() {
+            doPull();
+        });
+
+        $(function () {
+            doPull();
+            setInterval(doPull, autoPullInterval);
+        });
+    </script>
 {% endblock %}

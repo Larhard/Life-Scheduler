@@ -1,3 +1,5 @@
+import dateutil.parser
+
 from life_scheduler.board.models import Quest
 from life_scheduler.board.quest_source_manager import QuestSourceManager
 from life_scheduler.trello.models import Trello
@@ -15,18 +17,17 @@ class TrelloQuestSourceManager(QuestSourceManager):
 
         new_raw_quests = session.get_cards_from_list(self.list_id)
         new_quests = [
-            Quest(
-                name=quest["name"],
-                description=quest["description"],
-                deadline=quest["due"],
-                user=backend.user,
-                source=self.source,
-                external_id=quest["id"],
-            )
+            {
+                "name": quest["name"],
+                "deadline": dateutil.parser.parse(quest["due"]) if quest["due"] else None,
+                "user": backend.user,
+                "source": self.source,
+                "external_id": quest["id"],
+            }
             for quest in new_raw_quests
         ]
 
-        new_quests_external_ids = [quest.external_id for quest in new_quests]
+        new_quests_external_ids = [quest["external_id"] for quest in new_quests]
 
         for quest in new_quests:
             Quest.create_or_update(quest)

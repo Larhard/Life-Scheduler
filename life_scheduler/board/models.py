@@ -46,11 +46,10 @@ class Quest(db.Model):
 
         self.is_archived = is_archived
 
-    def update(self, other):
-        self.name = other.name
-        self.description = other.description
-        self.start_date = other.start_date
-        self.deadline = other.deadline
+    def update(self, quest_dict):
+        for key in quest_dict:
+            setattr(self, key, quest_dict[key])
+        db.session.commit()
 
     def set_archived(self, value):
         self.is_archived = value
@@ -62,12 +61,14 @@ class Quest(db.Model):
         db.session.commit()
 
     @classmethod
-    def create_or_update(cls, quest):
-        old_quest = cls.get_by_external_id(quest.external_id, quest.source)
+    def create_or_update(cls, quest_dict):
+        old_quest = cls.get_by_external_id(quest_dict["external_id"], quest_dict["source"])
         if not old_quest:
+            quest = Quest(**quest_dict)
             cls.create(quest)
         else:
-            old_quest.update(quest)
+            old_quest.set_archived(False)
+            old_quest.update(quest_dict)
 
     @classmethod
     def get_by_external_id(cls, external_id, source):
@@ -75,7 +76,7 @@ class Quest(db.Model):
 
     @classmethod
     def get_by_source(cls, source):
-        return cls.query.filter_by(source=source).first()
+        return cls.query.filter_by(source=source).all()
 
 
 class QuestSource(db.Model):

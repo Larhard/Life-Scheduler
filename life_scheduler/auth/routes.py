@@ -68,13 +68,13 @@ def login_callback():
     user_info = oauth.get(user_info_url).json()
 
     if user_info.get("email_verified"):
-        user = User(
-            email=user_info["email"],
-            name=user_info["name"],
-            given_name=user_info["given_name"],
-            family_name=user_info["family_name"],
-            picture=user_info["picture"],
-        )
+        user = {
+            "email": user_info["email"],
+            "name": user_info["name"],
+            "given_name": user_info["given_name"],
+            "family_name": user_info["family_name"],
+            "picture": user_info["picture"],
+        }
 
         user = User.get_or_create(user)
 

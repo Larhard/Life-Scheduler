@@ -16,11 +16,11 @@ blueprint = Blueprint("board_api", __name__, url_prefix="/api/board")
 @login_required
 @approval_required
 def quests_today():
-    quests = current_user.quests.filter(Quest.start_date >= datetime.utcnow()).all()
+    quests = current_user.quests.filter_by(is_archived=False).all()
 
     attrs = [
         "id",
-        "title",
+        "name",
         "description",
         "start_date",
         "deadline",
@@ -37,3 +37,5 @@ def quests_today():
 def quests_pull():
     for source in current_user.quest_sources:
         source.get_manager().pull()
+
+    return ""

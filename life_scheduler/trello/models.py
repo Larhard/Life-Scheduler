@@ -3,6 +3,7 @@ from requests_oauthlib import OAuth1Session
 from sqlalchemy.orm import backref
 
 from life_scheduler import db
+from life_scheduler.trello.api import TrelloAPISession
 
 
 class Trello(db.Model):
@@ -18,7 +19,7 @@ class Trello(db.Model):
         self.secret = secret
         self.user = user
 
-    def get_session(self, **kwargs):
+    def get_raw_session(self, **kwargs):
         client_key = current_app.config["TRELLO_API_KEY"]
         client_secret = current_app.config["TRELLO_API_SECRET"]
 
@@ -29,6 +30,9 @@ class Trello(db.Model):
             resource_owner_secret=self.secret,
             **kwargs
         )
+
+    def get_session(self):
+        return TrelloAPISession(self.get_raw_session())
 
     @classmethod
     def create(cls, trello):
@@ -43,6 +47,10 @@ class Trello(db.Model):
     @classmethod
     def get_by_token(cls, token):
         return cls.query.filter_by(token=token).first()
+
+    @classmethod
+    def get_by_id(cls, i):
+        return cls.query.get(i)
 
 
 class TrelloTemporaryToken(db.Model):
@@ -60,7 +68,7 @@ class TrelloTemporaryToken(db.Model):
         self.user = user
         self.expires = expires
 
-    def get_session(self, **kwargs):
+    def get_raw_session(self, **kwargs):
         client_key = current_app.config["TRELLO_API_KEY"]
         client_secret = current_app.config["TRELLO_API_SECRET"]
 

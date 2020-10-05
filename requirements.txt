@@ -2,9 +2,15 @@ Flask
 Flask-Login
 Flask-Migrate
 Flask-SQLAlchemy
+Flask-WTF
+SQLAlchemy
+WTForms
+alembic
+click
 libsass
 oauthlib
 pyopenssl
+pytest
 python-dotenv
 requests
 requests-oauthlib

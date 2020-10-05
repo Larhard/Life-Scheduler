@@ -1,0 +1,44 @@
+{% extends "_base.html" %}
+
+{% block content %}
+    {% with %}
+        {% set trello = current_user.trello.get_session()  %}
+        {% set boards = trello.get_boards(filter="open") %}
+        <form method="post">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                <label for="input_board">{{ form.board.label }}:</label>
+                <select class="form-control" id="input_board" name="{{ form.board.name }}">
+                    {% for board in boards %}
+                        <option value="{{ board["id"] }}">{{ board["name"] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="input_list">{{ form.board.label }}:</label>
+                <select class="form-control" id="input_list" name="{{ form.list.name }}">
+                    {% for board in boards %}
+                        {% for list in trello.get_lists(board["id"], filter="open") %}
+                            <option value="{{ list["id"] }}" board="{{ board["id"] }}">{{ list["name"] }}</option>
+                        {% endfor %}
+                    {% endfor %}
+                </select>
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    {% endwith %}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        const $inputBoard = $("#input_board");
+        const $inputList = $("#input_list");
+
+        const $inputListOptions = $inputList.find("option");
+
+        $inputBoard.on("change", function () {
+            $inputList.html($inputListOptions.filter("[board='" + this.value + "']")).trigger("change");
+        }).trigger("change");
+    </script>
+{% endblock %}

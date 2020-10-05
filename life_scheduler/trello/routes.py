@@ -20,7 +20,7 @@ def login():
         user=current_user,
         expires=datetime.utcnow() + timedelta(days=1),
     )
-    response = token.get_session().fetch_request_token(token_request_url)
+    response = token.get_raw_session().fetch_request_token(token_request_url)
 
     oauth_token = response["oauth_token"]
     oauth_token_secret = response["oauth_token_secret"]
@@ -30,7 +30,7 @@ def login():
 
     TrelloTemporaryToken.create(token)
 
-    url = token.get_session().authorization_url(
+    url = token.get_raw_session().authorization_url(
         url=authorization_url,
         return_url=url_for("trello.login_callback", _external=True),
         expiration="never",
@@ -49,7 +49,7 @@ def login_callback():
 
     temporary_token = TrelloTemporaryToken.get_by_token(oauth_token)
 
-    oauth = temporary_token.get_session(verifier=oauth_verifier)
+    oauth = temporary_token.get_raw_session(verifier=oauth_verifier)
 
     response = oauth.fetch_access_token(access_token_request_url)
 

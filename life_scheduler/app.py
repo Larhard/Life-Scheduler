@@ -15,11 +15,13 @@ login_manager = LoginManager()
 
 def create_app(config_object=config.Config):
     import life_scheduler.auth.models
+    import life_scheduler.board.models
     import life_scheduler.trello.models
 
     import life_scheduler.routes
     import life_scheduler.auth.routes
     import life_scheduler.board.routes
+    import life_scheduler.board.api_routes
     import life_scheduler.trello.routes
 
     root_folder = os.path.dirname(os.path.dirname(__file__))
@@ -38,6 +40,7 @@ def create_app(config_object=config.Config):
 
     app.register_blueprint(life_scheduler.routes.blueprint)
     app.register_blueprint(life_scheduler.auth.routes.blueprint)
+    app.register_blueprint(life_scheduler.board.api_routes.blueprint)
     app.register_blueprint(life_scheduler.board.routes.blueprint)
     app.register_blueprint(life_scheduler.trello.routes.blueprint)
 

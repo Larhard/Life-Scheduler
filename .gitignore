@@ -1,4 +1,5 @@
 migrations/
+static/css/
 
 # Created by https://www.toptal.com/developers/gitignore/api/vim,flask,python,pycharm
 # Edit at https://www.toptal.com/developers/gitignore?templates=vim,flask,python,pycharm

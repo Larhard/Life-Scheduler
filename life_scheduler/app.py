@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -20,9 +22,14 @@ def create_app(config_object=config.Config):
     import life_scheduler.board.routes
     import life_scheduler.trello.routes
 
+    root_folder = os.path.dirname(os.path.dirname(__file__))
+
     app = Flask(
         __name__,
+        static_folder=os.path.join(root_folder, "static"),
+        template_folder=os.path.join(root_folder, "templates"),
     )
+
     app.config.from_object(config_object)
 
     db.init_app(app)
@@ -38,8 +45,8 @@ def create_app(config_object=config.Config):
         app.wsgi_app,
         {
             'life_scheduler': {
-                'sass_path': 'static/sass',
-                'css_path': 'static/css',
+                'sass_path': os.path.join(app.static_folder, 'sass'),
+                'css_path': os.path.join(app.static_folder, 'css'),
                 'wsgi_path': '/static/css',
                 'strip_extension': True,
             },

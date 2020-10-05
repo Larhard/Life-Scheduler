@@ -247,9 +247,10 @@
 
         pullButton.on("click", doPull);
         archivizeButton.on("click", doArchivize);
-        $(document).on("click", ".quest-item", doToggleDone);
+        {#$(document).on("click", ".quest-item", doToggleDone);#}
 
-        questList.sortable()
+        questList.sortable();
+        questList.disableSelection();
 
         $(function () {
             doPull();

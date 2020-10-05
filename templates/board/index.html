@@ -2,8 +2,11 @@
 
 {% block content %}
     <header class="navbar sticky-top bg-dark" role="navigation">
-        <button id="pull-button" class="btn btn-primary" type="button">
+        <button id="pull-button" class="btn btn-primary job-button" type="button">
             Pull
+        </button>
+        <button id="archivize-button" class="btn btn-primary job-button" type="button">
+            Archivize
         </button>
     </header>
 
@@ -22,9 +25,16 @@
 
         const autoPullInterval = 60 * 1000;
 
-        const questList = $("#quest-list")
+        const archivizeButton = $("#archivize-button");
+        const archivizeButtonReadyHTML = archivizeButton.html();
+        const archivizeButtonInProgressHTML = '<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Archivizing...';
+        const archivizeButtonFailedHTML = "Archivization failed";
 
-        let pullInProgress = false;
+        const jobButtons = $(".job-button");
+
+        let jobInProgress = false;
+
+        const questList = $("#quest-list");
 
         function doPull() {
             return doInitializeQuestPull()
@@ -37,12 +47,12 @@
         function doInitializeQuestPull() {
             let deferred = $.Deferred();
 
-            if (pullInProgress) {
+            if (jobInProgress) {
                 return;
             }
-            pullInProgress = true;
+            jobInProgress = true;
             console.log("Pulling...")
-            pullButton.addClass("disabled")
+            jobButtons.addClass("disabled")
             pullButton.html(pullButtonInProgressHTML);
 
             deferred.resolve()
@@ -67,11 +77,11 @@
             pullButton.html(pullButtonReadyHTML);
             pullButton.addClass("btn-primary");
             pullButton.removeClass("btn-danger");
-            pullButton.removeClass("disabled")
-            pullInProgress = false;
+            jobButtons.removeClass("disabled")
+            jobInProgress = false;
 
             deferred.resolve();
-            return deferred
+            return deferred;
         }
 
         function doNotifyPullFailure() {
@@ -80,15 +90,19 @@
             pullButton.html(pullButtonFailedHTML);
             pullButton.addClass("btn-danger");
             pullButton.removeClass("btn-primary");
-            pullButton.removeClass("disabled");
-            pullInProgress = false;
+            jobButtons.removeClass("disabled");
+            jobInProgress = false;
 
             deferred.resolve();
-            return deferred
+            return deferred;
         }
 
         function getQuestIdentifier(questId) {
             return `quest-${questId}`;
+        }
+
+        function parseQuestIdentifier(questIdentifier) {
+            return questIdentifier.split("-")[1];
         }
 
         function htmlEscape(str) {
@@ -100,11 +114,14 @@
         }
 
         function formatQuestItem(data) {
-            return `<li id="${getQuestIdentifier(data.id)}" class="list-group-item">${formatQuestBody(data)}</li>`;
+            let formatted = $(`<li id="${getQuestIdentifier(data.id)}" class="list-group-item quest-item">${formatQuestBody(data)}</li>`);
+            setQuestItemDoneFlag(formatted, data.is_done);
+            return formatted;
         }
 
         function updateQuest(quest, data) {
             quest.html(formatQuestBody(data));
+            setQuestItemDoneFlag(quest, data.is_done);
         }
 
         function createQuest(data) {
@@ -123,10 +140,8 @@
 
         function removeOutdatedQuests(data) {
             const ids = $.map(data, x => getQuestIdentifier(x.id));
-            console.log(ids)
             questList.find("li").each(function () {
                 const id = $(this).attr("id");
-                console.log(id)
                 if (! ids.includes(id)) {
                     $(this).remove();
                 }
@@ -138,9 +153,100 @@
             removeOutdatedQuests(data);
         }
 
-        pullButton.on("click", function() {
-            doPull();
-        });
+        function doArchivize() {
+            return doInitializeArchivization()
+                .then(doUpdateServerArchivizationStatus)
+                .then(doUpdateQuestList)
+                .then(doFinishArchivization)
+                .fail(doNotifyArchivizationFailure)
+        }
+
+        function doInitializeArchivization() {
+            let deferred = $.Deferred();
+
+            if (jobInProgress) {
+                return;
+            }
+            jobInProgress = true;
+            console.log("Archivizing...")
+            jobButtons.addClass("disabled")
+            archivizeButton.html(archivizeButtonInProgressHTML);
+
+            deferred.resolve()
+
+            return deferred;
+        }
+
+        function doFinishArchivization() {
+            let deferred = $.Deferred();
+
+            archivizeButton.html(archivizeButtonReadyHTML);
+            archivizeButton.addClass("btn-primary");
+            archivizeButton.removeClass("btn-danger");
+            jobButtons.removeClass("disabled")
+            jobInProgress = false;
+
+            deferred.resolve();
+            return deferred;
+        }
+
+        function doNotifyArchivizationFailure() {
+            let deferred = $.Deferred();
+
+            archivizeButton.html(archivizeButtonFailedHTML);
+            archivizeButton.addClass("btn-danger");
+            archivizeButton.removeClass("btn-primary");
+            jobButtons.removeClass("disabled");
+            jobInProgress = false;
+
+            deferred.resolve();
+            return deferred;
+        }
+
+        function doUpdateServerArchivizationStatus() {
+            let questsToArchivize = questList.find("li.quest-done");
+            let data = {
+                quests: $.map(questsToArchivize, quest => parseQuestIdentifier(quest.id))
+            };
+            return $.post("{{ url_for("board_api.bulk_archivize") }}", data);
+        }
+
+        function doToggleDone() {
+            return doToggleDoneClass($(this))
+                .then(doUpdateServerDoneStatus)
+        }
+
+        function doToggleDoneClass(questItem) {
+            let deferred = $.Deferred();
+
+            const targetDoneFlag = !questItem.hasClass("quest-done");
+            setQuestItemDoneFlag(questItem, targetDoneFlag);
+
+            deferred.resolve(questItem);
+            return deferred;
+        }
+
+        function setQuestItemDoneFlag(questItem, flag) {
+            if (flag) {
+                questItem.addClass("quest-done");
+                questItem.addClass("bg-success");
+            } else {
+                questItem.removeClass("quest-done");
+                questItem.removeClass("bg-success");
+            }
+        }
+
+        function doUpdateServerDoneStatus(questItem) {
+            const questId = parseQuestIdentifier(questItem.attr("id"));
+            const is_done = questItem.hasClass("quest-done");
+            const url = "{{ url_for("board_api.quests", quest_id="QUEST_ID") }}".replace("QUEST_ID", questId);
+
+            return $.post(url, {is_done: is_done});
+        }
+
+        pullButton.on("click", doPull);
+        archivizeButton.on("click", doArchivize);
+        $(document).on("click", ".quest-item", doToggleDone);
 
         $(function () {
             doPull();

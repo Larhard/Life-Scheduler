@@ -1,5 +1,6 @@
 import dateutil.parser
 
+from life_scheduler import db
 from life_scheduler.board.models import Quest
 from life_scheduler.board.quest_source_manager import QuestSourceManager
 from life_scheduler.trello.models import Trello
@@ -34,7 +35,20 @@ class TrelloQuestSourceManager(QuestSourceManager):
 
         for quest in Quest.get_by_source(self.source):
             if quest.external_id not in new_quests_external_ids:
-                quest.set_archived(True)
+                quest.is_archived = True
+                db.session.commit()
+
+    def set_quest_archived(self, quest, value):
+        backend: Trello = self.source.get_backend()
+        session = backend.get_session()
+
+        session.update_card(quest.external_id, closed=value)
+        quest.is_archived = True
+        db.session.commit()
+
+    def set_quest_done(self, quest, value):
+        quest.is_done = value
+        db.session.commit()
 
     def __str__(self):
         return f"Trello: {self.board_display_name}/{self.list_display_name}"

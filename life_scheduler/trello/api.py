@@ -43,3 +43,12 @@ class TrelloAPISession:
         )
         response.raise_for_status()
         return response.json()
+
+    def update_card(self, card_id, **kwargs):
+        print(kwargs)
+        response = self.raw_session.put(
+            f"{self.BASE_URL}/1/cards/{card_id}",
+            json=kwargs,
+        )
+        response.raise_for_status()
+        return response.json()

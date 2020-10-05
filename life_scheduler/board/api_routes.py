@@ -1,8 +1,7 @@
 import json
-from datetime import datetime
 from functools import partial
 
-from flask import Blueprint, render_template
+from flask import Blueprint, request, abort
 from flask_login import login_required, current_user
 
 from life_scheduler.auth.utils import approval_required
@@ -24,6 +23,7 @@ def quests_today():
         "description",
         "start_date",
         "deadline",
+        "is_done",
     ]
 
     dumped_quests = list(map(partial(dump_attrs, attrs), quests))
@@ -39,3 +39,43 @@ def quests_pull():
         source.get_manager().pull()
 
     return ""
+
+
+@blueprint.route("/quests/<quest_id>", methods=["POST"])
+@login_required
+@approval_required
+def quests(quest_id):
+    quest = Quest.get_by_id(quest_id)
+    if quest.user.id != current_user.id:
+        abort(403)
+
+    if request.method == "POST":
+        if "is_done" in request.form:
+            is_done = bool(json.loads(request.form["is_done"]))
+            quest.set_done(is_done)
+
+    return ""
+
+
+@blueprint.route("/bulk/archivize", methods=["POST"])
+@login_required
+@approval_required
+def bulk_archivize():
+    if request.method == "POST":
+        if "quests[]" in request.form:
+            quest_ids = request.form.getlist("quests[]")
+            quest_ids = list(map(int, quest_ids))
+
+            quests_list = [Quest.get_by_id(quest_id) for quest_id in quest_ids]
+
+            for quest in quests_list:
+                if quest.user.id != current_user.id:
+                    abort(403)
+
+            for quest in quests_list:
+                quest.set_archived(True)
+
+    return ""
+
+
+

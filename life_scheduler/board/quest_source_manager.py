@@ -10,3 +10,9 @@ class QuestSourceManager:
 
     def pull(self):
         raise NotImplementedError()
+
+    def set_quest_archived(self, quest, value):
+        raise NotImplementedError()
+
+    def set_quest_done(self, quest, value):
+        raise NotImplementedError()

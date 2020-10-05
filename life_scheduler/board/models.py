@@ -1,13 +1,12 @@
 from sqlalchemy.orm import backref
 
 from life_scheduler import db
-from life_scheduler.board.trello_source_wrapper import TrelloSourceWrapper
 from life_scheduler.trello.models import Trello
 
 
 class Quest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.UnicodeText, nullable=False)
+    name = db.Column(db.UnicodeText, nullable=False)
     description = db.Column(db.UnicodeText)
 
     start_date = db.Column(db.DateTime)
@@ -17,21 +16,24 @@ class Quest(db.Model):
     user = db.relationship("User", backref=backref("quests", lazy="dynamic"))
 
     source_id = db.Column(db.Integer, db.ForeignKey("quest_source.id"), nullable=False)
-    source = db.relationship("QuestSource", backref="quests")
+    source = db.relationship("QuestSource", backref=backref("quests", lazy="dynamic"))
 
-    external_id = db.Column(db.Unicode(256))
+    external_id = db.Column(db.Unicode(256), index=True)
+
+    is_archived = db.Column(db.Boolean, default=False, index=True)
 
     def __init__(
             self,
-            title=None,
+            name=None,
             description=None,
             start_date=None,
             deadline=None,
             user=None,
             source=None,
             external_id=None,
+            is_archived=False,
     ):
-        self.title = title
+        self.name = name
         self.description = description
 
         self.start_date = start_date
@@ -42,10 +44,38 @@ class Quest(db.Model):
         self.source = source
         self.external_id = external_id
 
+        self.is_archived = is_archived
+
+    def update(self, other):
+        self.name = other.name
+        self.description = other.description
+        self.start_date = other.start_date
+        self.deadline = other.deadline
+
+    def set_archived(self, value):
+        self.is_archived = value
+        db.session.commit()
+
     @classmethod
     def create(cls, quest):
         db.session.add(quest)
         db.session.commit()
+
+    @classmethod
+    def create_or_update(cls, quest):
+        old_quest = cls.get_by_external_id(quest.external_id, quest.source)
+        if not old_quest:
+            cls.create(quest)
+        else:
+            old_quest.update(quest)
+
+    @classmethod
+    def get_by_external_id(cls, external_id, source):
+        return cls.query.filter_by(external_id=external_id, source=source).first()
+
+    @classmethod
+    def get_by_source(cls, source):
+        return cls.query.filter_by(source=source).first()
 
 
 class QuestSource(db.Model):
@@ -74,14 +104,15 @@ class QuestSource(db.Model):
         else:
             raise ValueError(f"Unknown backend type: {self.backend_type}")
 
-    def get_wrapper(self):
+    def get_manager(self):
         if self.backend_type == "trello":
-            return TrelloSourceWrapper(self, **self.args)
+            from life_scheduler.board.trello_quest_source_manager import TrelloQuestSourceManager
+            return TrelloQuestSourceManager(self, **self.args)
         else:
             raise ValueError(f"Unknown backend type: {self.backend_type}")
 
     def __str__(self):
-        return str(self.get_wrapper())
+        return str(self.get_manager())
 
     @classmethod
     def get_by_id(cls, source_id):

@@ -16,8 +16,9 @@ def login():
     debug_fast_login = current_app.config["DEBUG_FAST_LOGIN"]
     if debug_fast_login:
         user = User.get_by_email(debug_fast_login)
-        login_user(user)
-        return redirect(url_for("board.index"))
+        if user:
+            login_user(user)
+            return redirect(url_for("board.index"))
 
     provider_config = get_google_provider_config()
     authorization_url = provider_config["authorization_endpoint"]

@@ -29,3 +29,11 @@ def quests_today():
     dumped_quests = list(map(partial(dump_attrs, attrs), quests))
 
     return json.dumps(dumped_quests)
+
+
+@blueprint.route("/quests/pull")
+@login_required
+@approval_required
+def quests_pull():
+    for source in current_user.quest_sources:
+        source.get_manager().pull()

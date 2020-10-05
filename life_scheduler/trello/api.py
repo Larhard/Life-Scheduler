@@ -36,3 +36,10 @@ class TrelloAPISession:
         response.raise_for_status()
         return response.json()
 
+    def get_cards_from_list(self, list_id, **kwargs):
+        response = self.raw_session.get(
+            f"{self.BASE_URL}/1/list/{list_id}/cards",
+            params=kwargs
+        )
+        response.raise_for_status()
+        return response.json()

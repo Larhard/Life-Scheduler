@@ -1,7 +1,7 @@
 {% extends "_base.html" %}
 
 {% block content %}
-    <div class="board">
+    <div class="container-fluid bg-light">
         <h1>Sources</h1>
         <ul class="list-group">
             {% for quest_source in current_user.quest_sources %}
@@ -13,4 +13,54 @@
         </ul>
         <a href="{{ url_for("board.add_trello_quest_source") }}" class="btn btn-primary">Add Trello source</a>
     </div>
+    <div class="container-fluid bg-light">
+        <h1>Graphs</h1>
+        <ul id="graphs-list" class="list-group">
+            {% for graph_source in current_user.image_graph_sources.order_by("priority").all() %}
+                <li id="graph-{{ graph_source.id }}" class="list-group-item">
+                    <img src="{{ graph_source.url }}" alt="{{ graph_source.url }}" class="col-2"/>
+                    <a href="{{ url_for("board.remove_image_graph_source", source_id=graph_source.id) }}" class="btn btn-danger btn-sm float-right">Remove</a>
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for("board.add_image_graph_source") }}" class="btn btn-primary">Add image source</a>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        const graphsList = $("#graphs-list");
+
+        function getGraphIdentifier(graphId) {
+            return `graph-${graphId}`;
+        }
+
+        function parseQuestIdentifier(graphIdentifier) {
+            return graphIdentifier.split("-")[1];
+        }
+
+        function doGetGraphsOrder() {
+            let deferred = $.Deferred();
+
+            let graphs = graphsList.find("li");
+            let order = $.map(graphs, graph => parseQuestIdentifier(graph.id))
+
+            deferred.resolve(order);
+            return deferred;
+        }
+
+        function doSaveGraphsOrder(order) {
+            return $.post("{{ url_for("board_api.graphs_set_order") }}", {order: order});
+        }
+
+        function doStoreGraphsOrder() {
+            return doGetGraphsOrder()
+                .then(doSaveGraphsOrder);
+        }
+
+        graphsList.sortable({
+            update: doStoreGraphsOrder
+        });
+        graphsList.disableSelection();
+    </script>
 {% endblock %}

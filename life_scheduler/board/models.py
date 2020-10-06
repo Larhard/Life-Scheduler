@@ -153,3 +153,36 @@ class QuestSource(db.Model):
             raise ValueError(f"Unknown backend: {backend}")
 
         cls.create(source)
+
+
+class ImageGraphSource(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    url = db.Column(db.UnicodeText, nullable=False)
+    refresh_rate = db.Column(db.Integer)
+    priority = db.Column(db.Integer)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user = db.relationship("User", backref=backref("image_graph_sources", lazy="dynamic"))
+
+    def __init__(self, url=None, refresh_rate=None, user=None):
+        self.url = url
+        self.refresh_rate = refresh_rate
+        self.user = user
+
+    def set_priority(self, value):
+        self.priority = value
+        db.session.commit()
+
+    @classmethod
+    def get_by_id(cls, source_id):
+        return cls.query.get(source_id)
+
+    @classmethod
+    def create(cls, source):
+        db.session.add(source)
+        db.session.commit()
+
+    @classmethod
+    def remove(cls, source):
+        db.session.delete(source)
+        db.session.commit()

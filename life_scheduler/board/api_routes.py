@@ -5,7 +5,7 @@ from flask import Blueprint, request, abort
 from flask_login import login_required, current_user
 
 from life_scheduler.auth.utils import approval_required
-from life_scheduler.board.models import Quest
+from life_scheduler.board.models import Quest, ImageGraphSource
 from life_scheduler.utils.json import dump_attrs
 
 blueprint = Blueprint("board_api", __name__, url_prefix="/api/board")
@@ -78,4 +78,23 @@ def bulk_archivize():
     return ""
 
 
+@blueprint.route("/graphs/set_order", methods=["POST"])
+@login_required
+@approval_required
+def graphs_set_order():
+    if request.method == "POST":
+        if "order[]" in request.form:
+            graphs_ids = request.form.getlist("order[]")
+            graphs_ids = list(map(int, graphs_ids))
 
+            for source in current_user.image_graph_sources.all():
+                source.set_priority(None)
+
+            for i, graph_id in enumerate(graphs_ids):
+                graph = ImageGraphSource.get_by_id(graph_id)
+                if graph.user.id != current_user.id:
+                    abort(403)
+
+                graph.set_priority(i)
+
+    return ""

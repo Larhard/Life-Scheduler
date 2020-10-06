@@ -268,13 +268,6 @@
             }
         }
 
-        pullButton.on("click", doPull);
-        archivizeButton.on("click", doArchivize);
-        $(document).on("click", ".quest-item", doToggleDone);
-
-        questList.sortable();
-        questList.disableSelection();
-
         function setBatteryLevel(level) {
             batteryLevelField.text(`${level * 100}%`);
         }
@@ -294,6 +287,13 @@
                 setBatteryCharging(battery.charging);
             }
         })
+
+        pullButton.on("click", doPull);
+        archivizeButton.on("click", doArchivize);
+        $(document).on("click", ".quest-item", doToggleDone);
+
+        questList.sortable();
+        questList.disableSelection();
 
         $(function () {
             doPull();

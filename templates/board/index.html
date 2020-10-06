@@ -221,9 +221,11 @@
 
         function restoreQuestList(data) {
             let orderData = Cookies.get("questOrder");
-            order = JSON.parse(orderData);
+            if (orderData) {
+                let order = JSON.parse(orderData);
 
-            order.forEach(questId => tryRestoreQuestById(questId, data));
+                order.forEach(questId => tryRestoreQuestById(questId, data));
+            }
         }
 
         function doArchivize() {

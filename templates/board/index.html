@@ -19,9 +19,23 @@
         </div>
     </header>
 
-    <div class="container-fluid bg-light col-10">
-        <ul id="quest-list" class="list-group">
-        </ul>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="bg-light col-sm-8 col-10">
+                <ul id="quest-list" class="list-group">
+                </ul>
+            </div>
+
+            <div class="bg-light col-sm-4 col-10">
+                <ul id="graphs-list" class="list-group">
+                    {% for graph_source in current_user.image_graph_sources.order_by("priority").all() %}
+                        <li id="graph-{{ graph_source.id }}" class="list-group-item">
+                            <img src="{{ graph_source.url }}" alt="{{ graph_source.url }}" class="w-100"/>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
     </div>
 {% endblock %}
 

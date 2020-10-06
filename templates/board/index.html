@@ -52,11 +52,21 @@
 
         const questList = $("#quest-list");
 
+        function doInitialPull() {
+            return doInitializeQuestPull()
+                .then(doInvokeQuestPull)
+                .then(doRestoreQuestList)
+                .then(doFinishPull)
+                .then(doStoreQuestOrder)
+                .fail(doNotifyPullFailure);
+        }
+
         function doPull() {
             return doInitializeQuestPull()
                 .then(doInvokeQuestPull)
                 .then(doUpdateQuestList)
                 .then(doFinishPull)
+                .then(doStoreQuestOrder)
                 .fail(doNotifyPullFailure);
         }
 
@@ -83,6 +93,14 @@
         function doUpdateQuestList() {
             return $.getJSON("{{ url_for("board_api.quests_today") }}")
                 .done(function (data) {
+                    updateQuestList(data);
+                });
+        }
+
+        function doRestoreQuestList() {
+            return $.getJSON("{{ url_for("board_api.quests_today") }}")
+                .done(function (data) {
+                    restoreQuestList(data);
                     updateQuestList(data);
                 });
         }
@@ -167,6 +185,45 @@
         function updateQuestList(data) {
             data.forEach(questData => createOrUpdateQuest(questData));
             removeOutdatedQuests(data);
+        }
+
+        function doGetQuestOrder() {
+            let deferred = $.Deferred();
+
+            let quests = questList.find("li");
+            let order = $.map(quests, quest => parseQuestIdentifier(quest.id))
+
+            deferred.resolve(order);
+            return deferred;
+        }
+
+        function doSaveQuestOrderToCache(order) {
+            let deferred = $.Deferred();
+
+            let data = JSON.stringify(order);
+            Cookies.set("questOrder", data);
+
+            deferred.resolve(order);
+            return deferred;
+        }
+
+        function doStoreQuestOrder() {
+            return doGetQuestOrder()
+                .then(doSaveQuestOrderToCache);
+        }
+
+        function tryRestoreQuestById(questId, data) {
+            let candidates = data.filter(x => x.id == questId)
+            if (candidates.length > 0) {
+                createOrUpdateQuest(candidates[0]);
+            }
+        }
+
+        function restoreQuestList(data) {
+            let orderData = Cookies.get("questOrder");
+            order = JSON.parse(orderData);
+
+            order.forEach(questId => tryRestoreQuestById(questId, data));
         }
 
         function doArchivize() {
@@ -292,11 +349,13 @@
         archivizeButton.on("click", doArchivize);
         $(document).on("click", ".quest-item", doToggleDone);
 
-        questList.sortable();
+        questList.sortable({
+            update: doStoreQuestOrder
+        });
         questList.disableSelection();
 
         $(function () {
-            doPull();
+            doInitialPull();
             setInterval(doPull, autoPullInterval);
         });
     </script>

@@ -328,7 +328,7 @@
         }
 
         function setBatteryLevel(level) {
-            batteryLevelField.text(`${level * 100}%`);
+            batteryLevelField.text(`${Math.round(level * 100)}%`);
         }
 
         function setBatteryCharging(charging) {

@@ -276,7 +276,7 @@
         questList.disableSelection();
 
         navigator.getBattery().then(function (battery) {
-            batteryLevelField.text(`${battery.level}%`);
+            batteryLevelField.text(`${battery.level * 100}%`);
             batteryChargingIconField.html(getBatteryChargingIcon(battery.charging));
             battery.onlevelchange = function () {
                 batteryLevelField.text(battery.level);

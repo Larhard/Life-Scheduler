@@ -7,7 +7,7 @@
             {% for quest_source in current_user.quest_sources %}
                 <li class="list-group-item">
                     {{ quest_source }}
-                    <a href="{{ url_for("board.remove_quest_source", source_id=quest_source.id) }}" class="btn btn-danger float-right">Remove</a>
+                    <a href="{{ url_for("board.remove_quest_source", source_id=quest_source.id) }}" class="btn btn-danger btn-sm float-right">Remove</a>
                 </li>
             {% endfor %}
         </ul>

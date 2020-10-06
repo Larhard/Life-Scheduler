@@ -30,7 +30,7 @@
                 <ul id="graphs-list" class="list-group">
                     {% for graph_source in current_user.image_graph_sources.order_by("priority").all() %}
                         <li id="graph-{{ graph_source.id }}" class="list-group-item">
-                            <img src="{{ graph_source.url }}" alt="{{ graph_source.url }}" class="w-100"/>
+                            <img src="{{ graph_source.url }}" alt="{{ graph_source.url }}" class="w-100" {% if graph_source.refresh_rate %}refresh="{{ graph_source.refresh_rate }}"{% endif %}/>
                         </li>
                     {% endfor %}
                 </ul>
@@ -91,7 +91,6 @@
                 return;
             }
             jobInProgress = true;
-            console.log("Pulling...")
             jobButtons.addClass("disabled")
             pullButton.html(pullButtonInProgressHTML);
 
@@ -257,7 +256,6 @@
                 return;
             }
             jobInProgress = true;
-            console.log("Archivizing...")
             jobButtons.addClass("disabled")
             archivizeButton.html(archivizeButtonInProgressHTML);
 
@@ -349,6 +347,35 @@
             batteryChargingIconField.html(getBatteryChargingIcon(charging));
         }
 
+        function refreshSrc() {
+            if (! this.attr("baseSrc")) {
+                let src = this.attr("src");
+                this.attr("baseSrc", src);
+            }
+
+            let baseSrc = this.attr("baseSrc");
+            let timestampParam = `timestamp=${new Date().getTime()}`;
+            let separator;
+
+            if (baseSrc.includes("?")) {
+                separator = "&";
+            } else {
+                separator = "?";
+            }
+
+            let src = `${baseSrc}${separator}${timestampParam}`;
+            this.attr("src", src);
+        }
+
+        function initRefreshers() {
+            let refreshable = $("[refresh]");
+            refreshable.each(function() {
+                let refreshRate = $(this).attr("refresh");
+                let handler = refreshSrc.bind($(this))
+                setInterval(handler, refreshRate * 1000)
+            });
+        }
+
         navigator.getBattery().then(function (battery) {
             setBatteryLevel(battery.level);
             setBatteryCharging(battery.charging);
@@ -373,6 +400,7 @@
         $(function () {
             doInitialPull();
             setInterval(doPull, autoPullInterval);
+            initRefreshers();
         });
     </script>
 {% endblock %}

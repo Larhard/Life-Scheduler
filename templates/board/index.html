@@ -275,15 +275,23 @@
         questList.sortable();
         questList.disableSelection();
 
+        function setBatteryLevel(level) {
+            batteryLevelField.text(`${level * 100}%`);
+        }
+
+        function setBatteryCharging(charging) {
+            batteryChargingIconField.html(getBatteryChargingIcon(charging));
+        }
+
         navigator.getBattery().then(function (battery) {
-            batteryLevelField.text(`${battery.level * 100}%`);
-            batteryChargingIconField.html(getBatteryChargingIcon(battery.charging));
+            setBatteryLevel(battery.level);
+            setBatteryCharging(battery.charging);
 
             battery.onlevelchange = function () {
-                batteryLevelField.text(battery.level);
+                setBatteryLevel(battery.level);
             }
             battery.onchargingchange = function () {
-                batteryChargingIconField.html(getBatteryChargingIcon(battery.charging));
+                setBatteryCharging(battery.charging);
             }
         })
 

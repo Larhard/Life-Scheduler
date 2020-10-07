@@ -15,7 +15,6 @@ class GoogleAPISession:
     def iter_get_pages(self, path, **kwargs):
         data = self.get(path, **kwargs)
         while data:
-            print(data)
             for item in data["items"]:
                 yield item
 
@@ -25,5 +24,11 @@ class GoogleAPISession:
             else:
                 data = None
 
-    def iter_calendar_list(self, **kwargs):
+    def iter_calendars(self, **kwargs):
         return self.iter_get_pages("/calendar/v3/users/me/calendarList", **kwargs)
+
+    def get_calendar(self, calendar_id, **kwargs):
+        return self.get(f"/calendar/v3/users/me/calendarList/{calendar_id}", **kwargs)
+
+    def iter_calendar_events(self, calendar_id, **kwargs):
+        return self.iter_get_pages(f"/calendar/v3/calendars/{calendar_id}/events", **kwargs)

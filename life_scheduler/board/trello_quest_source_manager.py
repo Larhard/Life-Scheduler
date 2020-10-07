@@ -24,6 +24,7 @@ class TrelloQuestSourceManager(QuestSourceManager):
                 "user": backend.user,
                 "source": self.source,
                 "external_id": quest["id"],
+                "is_archived": False,
             }
             for quest in new_raw_quests
         ]

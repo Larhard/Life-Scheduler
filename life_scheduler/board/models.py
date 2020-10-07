@@ -1,6 +1,7 @@
 from sqlalchemy.orm import backref
 
 from life_scheduler import db
+from life_scheduler.google.models import Google
 from life_scheduler.trello.models import Trello
 
 
@@ -10,13 +11,14 @@ class Quest(db.Model):
     description = db.Column(db.UnicodeText)
 
     start_date = db.Column(db.DateTime)
+    end_date = db.Column(db.DateTime)
     deadline = db.Column(db.DateTime)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     user = db.relationship("User", backref=backref("quests", lazy="dynamic"))
 
     source_id = db.Column(db.Integer, db.ForeignKey("quest_source.id"), nullable=False)
-    source = db.relationship("QuestSource", backref=backref("quests", lazy="dynamic"))
+    source = db.relationship("QuestSource", backref=backref("quests", lazy="dynamic", cascade="all, delete-orphan"))
 
     external_id = db.Column(db.Unicode(256), index=True)
 
@@ -28,6 +30,7 @@ class Quest(db.Model):
             name=None,
             description=None,
             start_date=None,
+            end_date=None,
             deadline=None,
             user=None,
             source=None,
@@ -39,6 +42,7 @@ class Quest(db.Model):
         self.description = description
 
         self.start_date = start_date
+        self.end_date = end_date
         self.deadline = deadline
 
         self.user = user
@@ -74,7 +78,6 @@ class Quest(db.Model):
             quest = Quest(**quest_dict)
             cls.create(quest)
         else:
-            quest_dict["is_archived"] = False
             old_quest.update(quest_dict)
 
     @classmethod
@@ -113,6 +116,8 @@ class QuestSource(db.Model):
     def get_backend(self):
         if self.backend_type == "trello":
             return Trello.get_by_id(self.backend_id)
+        elif self.backend_type == "google":
+            return Google.get_by_id(self.backend_id)
         else:
             raise ValueError(f"Unknown backend type: {self.backend_type}")
 
@@ -120,6 +125,9 @@ class QuestSource(db.Model):
         if self.backend_type == "trello":
             from life_scheduler.board.trello_quest_source_manager import TrelloQuestSourceManager
             return TrelloQuestSourceManager(self, **self.args)
+        elif self.backend_type == "google":
+            from life_scheduler.board.google_quest_source_manager import GoogleQuestSourceManager
+            return GoogleQuestSourceManager(self, **self.args)
         else:
             raise ValueError(f"Unknown backend type: {self.backend_type}")
 
@@ -147,6 +155,11 @@ class QuestSource(db.Model):
         if isinstance(backend, Trello):
             source.user = backend.user
             source.backend_type = "trello"
+            source.backend_id = backend.id
+            source.args = kwargs
+        elif isinstance(backend, Google):
+            source.user = backend.user
+            source.backend_type = "google"
             source.backend_id = backend.id
             source.args = kwargs
         else:

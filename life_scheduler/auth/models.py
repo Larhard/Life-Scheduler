@@ -1,3 +1,6 @@
+from datetime import time, datetime
+
+from dateutil.tz import gettz
 from flask_login import UserMixin
 
 from life_scheduler import db, login_manager
@@ -10,6 +13,8 @@ class User(UserMixin, db.Model):
     given_name = db.Column(db.String(120))
     family_name = db.Column(db.String(120))
     picture = db.Column(db.String(120))
+
+    timezone = db.Column(db.String(120))
 
     is_approved = db.Column(db.Boolean, default=False)
 
@@ -26,6 +31,21 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f"<User {self.email}>"
+
+    @property
+    def tz(self):
+        return gettz(self.timezone)
+
+    def time_from_iso_format(self, iso_string):
+        t = time.fromisoformat(iso_string)
+        return time.replace(t, tzinfo=self.tz)
+
+    def datetime_from_iso_format(self, iso_string):
+        dt = datetime.fromisoformat(iso_string)
+        return datetime.replace(dt, tzinfo=self.tz)
+
+    def datetime_now(self):
+        return datetime.now(tz=self.tz)
 
     @classmethod
     def get_or_create(cls, user_dict):

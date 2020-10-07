@@ -25,6 +25,18 @@
         </ul>
         <a href="{{ url_for("board.add_image_graph_source") }}" class="btn btn-primary">Add image source</a>
     </div>
+    <div class="container-fluid bg-light">
+        <h1>Google</h1>
+        <ul class="list-group">
+            {% for google in current_user.googles %}
+                <li id="graph-{{ google.id }}" class="list-group-item">
+                    {{ google }}
+                    <a href="{{ url_for("google.logout", google_id=google.id) }}" class="btn btn-danger btn-sm float-right">Remove</a>
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for("google.login") }}" class="btn btn-primary">Connect with Google account</a>
+    </div>
 {% endblock %}
 
 {% block scripts %}

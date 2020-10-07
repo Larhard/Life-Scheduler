@@ -2,7 +2,7 @@ from datetime import datetime
 
 import dateutil.parser
 
-from flask import Blueprint, current_app, url_for, session, redirect, request
+from flask import Blueprint, current_app, url_for, session, redirect, request, abort
 from flask_login import login_required, current_user
 from requests_oauthlib import OAuth2Session
 
@@ -22,6 +22,7 @@ def login():
 
     client_id = current_app.config["GOOGLE_CLIENT_ID"]
     scope = [
+        "email",
         "https://www.googleapis.com/auth/calendar",
     ]
     redirect_uri = url_for("google.login_callback", _external=True)
@@ -45,6 +46,8 @@ def login():
 
 
 @blueprint.route("/login/callback")
+@login_required
+@approval_required
 def login_callback():
     code = request.args.get("code")
 
@@ -67,6 +70,8 @@ def login_callback():
         code=code,
     )
 
+    user_info = oauth.get("https://openidconnect.googleapis.com/v1/userinfo").json()
+
     print(token.keys())
     print(token)
 
@@ -75,9 +80,23 @@ def login_callback():
         refresh_token=token["refresh_token"],
         token_type=token["token_type"],
         expires_at=datetime.fromtimestamp(token["expires_at"]),
+        email=user_info["email"],
         user=current_user,
     )
 
     Google.create(google)
 
+    return redirect(url_for("board.settings"))
+
+
+@blueprint.route("/logout/<google_id>")
+@login_required
+@approval_required
+def logout(google_id):
+    google = Google.get_by_id(google_id)
+
+    if google.user.id != current_user.id:
+        abort(403)
+
+    Google.remove(google)
     return redirect(url_for("board.settings"))

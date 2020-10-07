@@ -1,9 +1,10 @@
-from datetime import datetime
+from datetime import datetime, date, time
 
 
 def process_attr(attr):
-    if isinstance(attr, datetime):
-        return datetime.timestamp(attr)
+    if isinstance(attr, (datetime, date, time)):
+        attr = attr.isoformat()
+
     return attr
 
 

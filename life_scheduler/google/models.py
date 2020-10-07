@@ -24,13 +24,20 @@ class Google(db.Model):
 
     def get_raw_session(self, **kwargs):
         client_id = current_app.config["GOOGLE_CLIENT_ID"]
+        client_secret = current_app.config["GOOGLE_CLIENT_SECRET"]
         refresh_url = "https://oauth2.googleapis.com/token"
+
+        refresh_kwargs = {
+            "client_id": client_id,
+            "client_secret": client_secret,
+        }
 
         return OAuth2Session(
             client_id=client_id,
             token=self.token,
             token_updater=self.update_token,
             auto_refresh_url=refresh_url,
+            auto_refresh_kwargs=refresh_kwargs,
             **kwargs
         )
 

@@ -5,6 +5,7 @@ from life_scheduler import db
 from life_scheduler.board.models import Quest
 from life_scheduler.board.quest_source_manager import QuestSourceManager
 from life_scheduler.google.models import Google
+from life_scheduler.time import to_utc
 
 
 class GoogleQuestSourceManager(QuestSourceManager):
@@ -38,18 +39,32 @@ class GoogleQuestSourceManager(QuestSourceManager):
                 timeMax=formatted_time_max,
                 singleEvents=True,
         ):
-            start_date = None
-            end_date = None
-
             quest_dict = {
                 "name": event["summary"],
                 "description": event.get("description"),
                 "user": backend.user,
                 "source": self.source,
                 "external_id": event["id"],
-                "start_date": start_date,
-                "end_date": end_date,
             }
+
+            start_data = event.get("start")
+            if start_data:
+                start_timezone = start_data.get("timeZone")
+                if "date" in start_data:
+                    quest_dict["start_date"] = to_utc(start_data["date"], start_timezone)
+
+                if "dateTime" in start_data:
+                    quest_dict["start_datetime"] = to_utc(start_data["dateTime"], start_timezone)
+
+            end_data = event.get("end")
+            if end_data:
+                end_timezone = end_data.get("timeZone")
+
+                if "date" in end_data:
+                    quest_dict["end_date"] = to_utc(end_data["date"], end_timezone)
+
+                if "dateTime" in end_data:
+                    quest_dict["end_datetime"] = to_utc(end_data["dateTime"], end_timezone)
 
             Quest.create_or_update(quest_dict)
 

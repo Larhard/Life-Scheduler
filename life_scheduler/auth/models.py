@@ -1,9 +1,9 @@
 from datetime import time, datetime
 
-from dateutil.tz import gettz
 from flask_login import UserMixin
 
 from life_scheduler import db, login_manager
+from life_scheduler.time import get_timezone
 
 
 class User(UserMixin, db.Model):
@@ -34,7 +34,7 @@ class User(UserMixin, db.Model):
 
     @property
     def tz(self):
-        return gettz(self.timezone)
+        return get_timezone(self.timezone)
 
     def time_from_iso_format(self, iso_string):
         t = time.fromisoformat(iso_string)

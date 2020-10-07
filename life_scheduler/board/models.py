@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy.orm import backref
 
 from life_scheduler import db
@@ -10,8 +12,10 @@ class Quest(db.Model):
     name = db.Column(db.UnicodeText, nullable=False)
     description = db.Column(db.UnicodeText)
 
-    start_date = db.Column(db.DateTime)
-    end_date = db.Column(db.DateTime)
+    start_date = db.Column(db.Date)
+    start_time = db.Column(db.Time)
+    end_date = db.Column(db.Date)
+    end_time = db.Column(db.Time)
     deadline = db.Column(db.DateTime)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -30,7 +34,11 @@ class Quest(db.Model):
             name=None,
             description=None,
             start_date=None,
+            start_time=None,
+            start_datetime=None,
             end_date=None,
+            end_time=None,
+            end_datetime=None,
             deadline=None,
             user=None,
             source=None,
@@ -41,8 +49,18 @@ class Quest(db.Model):
         self.name = name
         self.description = description
 
-        self.start_date = start_date
-        self.end_date = end_date
+        if start_datetime is not None:
+            self.start_datetime = start_datetime
+        else:
+            self.start_date = start_date
+            self.start_time = start_time
+
+        if end_datetime is not None:
+            self.end_datetime = end_datetime
+        else:
+            self.end_date = end_date
+            self.end_time = end_time
+
         self.deadline = deadline
 
         self.user = user
@@ -65,6 +83,36 @@ class Quest(db.Model):
     def set_done(self, value):
         manager = self.source.get_manager()
         manager.set_quest_done(self, value)
+
+    @property
+    def start_datetime(self):
+        if self.start_time is not None:
+            return datetime.combine(self.start_date, self.start_time)
+        return self.start_date
+
+    @property
+    def end_datetime(self):
+        if self.end_time is not None:
+            return datetime.combine(self.end_date, self.end_time)
+        return self.end_date
+
+    @start_datetime.setter
+    def start_datetime(self, value):
+        if value is None:
+            self.start_date = None
+            self.start_time = None
+        else:
+            self.start_date = value.date()
+            self.start_time = value.time()
+
+    @end_datetime.setter
+    def end_datetime(self, value):
+        if value is None:
+            self.start_date = None
+            self.start_time = None
+        else:
+            self.end_date = value.date()
+            self.end_time = value.time()
 
     @classmethod
     def create(cls, quest):

@@ -22,6 +22,9 @@ def quests_today():
         "name",
         "description",
         "start_date",
+        "start_time",
+        "end_date",
+        "end_time",
         "deadline",
         "is_done",
     ]

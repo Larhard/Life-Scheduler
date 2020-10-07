@@ -11,7 +11,7 @@ from life_scheduler.utils.json import dump_attrs
 blueprint = Blueprint("board_api", __name__, url_prefix="/api/board")
 
 
-@blueprint.route("/quests/today")
+@blueprint.route("/quests/today/")
 @login_required
 @approval_required
 def quests_today():
@@ -31,7 +31,7 @@ def quests_today():
     return json.dumps(dumped_quests)
 
 
-@blueprint.route("/quests/pull")
+@blueprint.route("/quests/pull/")
 @login_required
 @approval_required
 def quests_pull():
@@ -41,7 +41,7 @@ def quests_pull():
     return ""
 
 
-@blueprint.route("/quests/<quest_id>", methods=["POST"])
+@blueprint.route("/quests/<quest_id>/", methods=["POST"])
 @login_required
 @approval_required
 def quests(quest_id):
@@ -57,7 +57,7 @@ def quests(quest_id):
     return ""
 
 
-@blueprint.route("/bulk/archivize", methods=["POST"])
+@blueprint.route("/bulk/archivize/", methods=["POST"])
 @login_required
 @approval_required
 def bulk_archivize():
@@ -78,7 +78,7 @@ def bulk_archivize():
     return ""
 
 
-@blueprint.route("/graphs/set_order", methods=["POST"])
+@blueprint.route("/graphs/set_order/", methods=["POST"])
 @login_required
 @approval_required
 def graphs_set_order():

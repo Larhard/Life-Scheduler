@@ -20,14 +20,14 @@ def index():
     return render_template("board/index.html")
 
 
-@blueprint.route("/settings")
+@blueprint.route("/settings/")
 @login_required
 @approval_required
 def settings():
     return render_template("board/settings.html")
 
 
-@blueprint.route("/settings/add_trello_quest_source/<trello_id>", methods=["GET", "POST"])
+@blueprint.route("/settings/add_trello_quest_source/<trello_id>/", methods=["GET", "POST"])
 @login_required
 @approval_required
 def add_trello_quest_source(trello_id):
@@ -58,7 +58,7 @@ def add_trello_quest_source(trello_id):
     return render_template("board/add_trello_quest_source.html", form=form, trello=trello)
 
 
-@blueprint.route("/settings/remove_quest_source/<source_id>", methods=["GET"])
+@blueprint.route("/settings/remove_quest_source/<source_id>/", methods=["GET"])
 @login_required
 @approval_required
 def remove_quest_source(source_id):
@@ -71,7 +71,7 @@ def remove_quest_source(source_id):
     return redirect(url_for("board.settings"))
 
 
-@blueprint.route("/settings/add_image_graph_source", methods=["GET", "POST"])
+@blueprint.route("/settings/add_image_graph_source/", methods=["GET", "POST"])
 @login_required
 @approval_required
 def add_image_graph_source():
@@ -96,7 +96,7 @@ def add_image_graph_source():
     return render_template("board/add_image_graph_source.html", form=form)
 
 
-@blueprint.route("/settings/remove_image_graph_source/<source_id>", methods=["GET"])
+@blueprint.route("/settings/remove_image_graph_source/<source_id>/", methods=["GET"])
 @login_required
 @approval_required
 def remove_image_graph_source(source_id):
@@ -109,7 +109,7 @@ def remove_image_graph_source(source_id):
     return redirect(url_for("board.settings"))
 
 
-@blueprint.route("/settings/add_google_quest_source/<google_id>", methods=["GET", "POST"])
+@blueprint.route("/settings/add_google_quest_source/<google_id>/", methods=["GET", "POST"])
 @login_required
 @approval_required
 def add_google_quest_source(google_id):

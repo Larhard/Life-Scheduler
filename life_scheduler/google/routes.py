@@ -9,7 +9,7 @@ from life_scheduler.google.models import Google
 blueprint = Blueprint("google", __name__, url_prefix="/google")
 
 
-@blueprint.route("/login")
+@blueprint.route("/login/")
 @login_required
 @approval_required
 def login():
@@ -41,7 +41,7 @@ def login():
     return redirect(url)
 
 
-@blueprint.route("/login/callback")
+@blueprint.route("/login/callback/")
 @login_required
 @approval_required
 def login_callback():
@@ -79,7 +79,7 @@ def login_callback():
     return redirect(url_for("board.settings"))
 
 
-@blueprint.route("/logout/<google_id>")
+@blueprint.route("/logout/<google_id>/")
 @login_required
 @approval_required
 def logout(google_id):

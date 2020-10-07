@@ -11,7 +11,7 @@ from life_scheduler.auth.models import User
 blueprint = Blueprint("auth", __name__)
 
 
-@blueprint.route("/login")
+@blueprint.route("/login/")
 def login():
     debug_fast_login = current_app.config["DEBUG_FAST_LOGIN"]
     if debug_fast_login:
@@ -41,7 +41,7 @@ def login():
     return redirect(url)
 
 
-@blueprint.route("/login/callback")
+@blueprint.route("/login/callback/")
 def login_callback():
     code = request.args.get("code")
 
@@ -86,7 +86,7 @@ def login_callback():
         return "Failed to authenticate via Google", 400
 
 
-@blueprint.route("/logout")
+@blueprint.route("/logout/")
 def logout():
     logout_user()
     return redirect(url_for("board.index"))

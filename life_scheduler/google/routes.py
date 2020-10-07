@@ -72,9 +72,6 @@ def login_callback():
 
     user_info = oauth.get("https://openidconnect.googleapis.com/v1/userinfo").json()
 
-    print(token.keys())
-    print(token)
-
     google = Google(
         access_token=token["access_token"],
         refresh_token=token["refresh_token"],

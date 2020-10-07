@@ -156,12 +156,53 @@
             return $("<div>").text(str).html();
         }
 
+        function formatQuestBodyTime(time) {
+            return time.replace(/(.*:.*):.*/, "$1");
+        }
+
+        function formatQuestBodyDate(date) {
+            return date;
+        }
+
+        function formatQuestBodyTimestamp(date, time) {
+            /*
+            if (date !== null && time !== null) {
+                return `${formatQuestBodyDate(date)} ${formatQuestBodyTime(time)}`;
+            } else if (date !== null) {
+                return formatQuestBodyDate(date);
+            }
+            */
+
+            if (time !== null) {
+                return formatQuestBodyTime(time);
+            }
+            return "";
+        }
+
+        function formatQuestBodyDateField(data) {
+            let start = formatQuestBodyTimestamp(data.start_date, data.start_time);
+
+            if (start !== "") {
+                return `<div class="text-secondary float-right" style="font-size: 0.9rem;">${start}</div>`
+            }
+
+            return ""
+        }
+
+        function formatQuestBodyName(data) {
+            return `<div>${htmlEscape(data.name)}</div>`;
+        }
+
         function formatQuestBody(data) {
-            return `${htmlEscape(data.name)}`;
+            let name = formatQuestBodyName(data);
+            let date = formatQuestBodyDateField(data);
+
+            return `${date}${name}`;
+            {#return `<div class="row">${date}${name}</div>`;#}
         }
 
         function formatQuestItem(data) {
-            let formatted = $(`<li id="${getQuestIdentifier(data.id)}" class="list-group-item quest-item">${formatQuestBody(data)}</li>`);
+            let formatted = $(`<li id="${getQuestIdentifier(data.id)}" class="list-group-item quest-item container-fluid">${formatQuestBody(data)}</li>`);
             setQuestItemDoneFlag(formatted, data.is_done);
             return formatted;
         }
@@ -204,7 +245,7 @@
             let deferred = $.Deferred();
 
             let quests = questList.find("li");
-            let order = $.map(quests, quest => parseQuestIdentifier(quest.id))
+            let order = $.map(quests, quest => parseQuestIdentifier(quest.id));
 
             deferred.resolve(order);
             return deferred;

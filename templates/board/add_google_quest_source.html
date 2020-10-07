@@ -1,0 +1,14 @@
+{% extends "_base.html" %}
+
+{% block content %}
+    <div class="container-fluid bg-light">
+        <form method="post">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                <label for="input_board">{{ form.calendar.label }}</label>
+                {{ form.calendar(class="form-control") }}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+{% endblock %}

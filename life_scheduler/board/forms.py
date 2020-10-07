@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, IntegerField
+from wtforms import StringField, SubmitField, IntegerField, SelectField
 
 
 class AddTrelloQuestSourceForm(FlaskForm):
@@ -11,4 +11,9 @@ class AddTrelloQuestSourceForm(FlaskForm):
 class AddImageGraphSourceForm(FlaskForm):
     url = StringField()
     refresh_rate = IntegerField(default=0)
+    submit = SubmitField("Create")
+
+
+class AddGoogleQuestSourceForm(FlaskForm):
+    calendar = SelectField(validate_choice=False)
     submit = SubmitField("Create")

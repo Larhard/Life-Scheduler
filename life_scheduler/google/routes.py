@@ -1,7 +1,3 @@
-from datetime import datetime
-
-import dateutil.parser
-
 from flask import Blueprint, current_app, url_for, session, redirect, request, abort
 from flask_login import login_required, current_user
 from requests_oauthlib import OAuth2Session
@@ -73,10 +69,7 @@ def login_callback():
     user_info = oauth.get("https://openidconnect.googleapis.com/v1/userinfo").json()
 
     google = Google(
-        access_token=token["access_token"],
-        refresh_token=token["refresh_token"],
-        token_type=token["token_type"],
-        expires_at=datetime.fromtimestamp(token["expires_at"]),
+        token=token,
         email=user_info["email"],
         user=current_user,
     )

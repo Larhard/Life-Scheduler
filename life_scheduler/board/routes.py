@@ -1,9 +1,13 @@
+import json
+
 from flask import Blueprint, render_template, redirect, url_for, abort
 from flask_login import login_required, current_user
 
 from life_scheduler.auth.utils import approval_required
-from life_scheduler.board.forms import AddTrelloQuestSourceForm, AddImageGraphSourceForm
+from life_scheduler.board.forms import AddTrelloQuestSourceForm, AddImageGraphSourceForm, AddGoogleQuestSourceForm
 from life_scheduler.board.models import QuestSource, ImageGraphSource
+from life_scheduler.google.api import GoogleAPISession
+from life_scheduler.google.models import Google
 from life_scheduler.trello.models import Trello
 
 blueprint = Blueprint("board", __name__)
@@ -103,3 +107,22 @@ def remove_image_graph_source(source_id):
 
     ImageGraphSource.remove(source)
     return redirect(url_for("board.settings"))
+
+
+@blueprint.route("/settings/add_google_quest_source/<google_id>", methods=["GET", "POST"])
+@login_required
+@approval_required
+def add_google_quest_source(google_id):
+    google = Google.get_by_id(google_id)
+    if google.user.id != current_user.id:
+        abort(403)
+
+    form = AddGoogleQuestSourceForm()
+
+    if form.validate_on_submit():
+        return redirect(url_for("board.settings"))
+
+    session: GoogleAPISession = google.get_session()
+    form.calendar.choices = [(c["id"], c["summary"]) for c in session.iter_calendar_list()]
+
+    return render_template("board/add_google_quest_source.html", form=form, google=google)

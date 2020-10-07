@@ -5,9 +5,13 @@
         <h1>Sources</h1>
         <ul class="list-group">
             {% for quest_source in current_user.quest_sources %}
-                <li class="list-group-item">
-                    {{ quest_source }}
-                    <a href="{{ url_for("board.remove_quest_source", source_id=quest_source.id) }}" class="btn btn-danger btn-sm float-right">Remove</a>
+                <li class="list-group-item container-fluid">
+                    <div class="row">
+                        <div class="col-sm-6">{{ quest_source }}</div>
+                        <div class="col-sm-6 text-right">
+                            <a href="{{ url_for("board.remove_quest_source", source_id=quest_source.id) }}" class="btn btn-danger btn-sm">Remove</a>
+                        </div>
+                    </div>
                 </li>
             {% endfor %}
         </ul>
@@ -16,9 +20,13 @@
         <h1>Graphs</h1>
         <ul id="graphs-list" class="list-group">
             {% for graph_source in current_user.image_graph_sources.order_by("priority").all() %}
-                <li id="graph-{{ graph_source.id }}" class="list-group-item">
-                    <img src="{{ graph_source.url }}" alt="{{ graph_source.url }}" class="col-2"/>
-                    <a href="{{ url_for("board.remove_image_graph_source", source_id=graph_source.id) }}" class="btn btn-danger btn-sm float-right">Remove</a>
+                <li id="graph-{{ graph_source.id }}" class="list-group-item container-fluid">
+                    <div class="row">
+                        <div class="col-sm-2 col-4"><img src="{{ graph_source.url }}" alt="{{ graph_source.url }}" class="w-100"/></div>
+                        <div class="col-sm-10 col-8 text-right">
+                            <a href="{{ url_for("board.remove_image_graph_source", source_id=graph_source.id) }}" class="btn btn-danger btn-sm float-right">Remove</a>
+                        </div>
+                    </div>
                 </li>
             {% endfor %}
         </ul>
@@ -28,9 +36,14 @@
         <h1>Google</h1>
         <ul class="list-group">
             {% for google in current_user.googles %}
-                <li id="google-{{ google.id }}" class="list-group-item">
-                    {{ google }}
-                    <a href="{{ url_for("google.logout", google_id=google.id) }}" class="btn btn-danger btn-sm float-right">Remove</a>
+                <li id="google-{{ google.id }}" class="list-group-item container-fluid">
+                    <div class="row">
+                        <div class="col-sm-6">{{ google }}</div>
+                        <div class="col-sm-6 text-right">
+                            <a href="{{ url_for("board.add_google_quest_source", google_id=google.id) }}" class="btn btn-primary btn-sm">Add quest source</a>
+                            <a href="{{ url_for("google.logout", google_id=google.id) }}" class="btn btn-danger btn-sm">Remove</a>
+                        </div>
+                    </div>
                 </li>
             {% endfor %}
         </ul>

@@ -27,6 +27,7 @@ def quests_today():
         "end_time",
         "deadline",
         "is_done",
+        "labels",
     ]
 
     dumped_quests = list(map(partial(dump_attrs, attrs), quests))

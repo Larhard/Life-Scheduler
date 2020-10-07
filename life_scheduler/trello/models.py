@@ -45,6 +45,11 @@ class Trello(db.Model):
 
     @classmethod
     def remove(cls, trello):
+        from life_scheduler.board.models import QuestSource
+        sources = QuestSource.query.filter_by(backend_type="trello", backend_id=trello.id).all()
+        for source in sources:
+            db.session.delete(source)
+
         db.session.delete(trello)
         db.session.commit()
 

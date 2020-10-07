@@ -1,10 +1,9 @@
-import json
-
 from flask import Blueprint, render_template, redirect, url_for, abort
 from flask_login import login_required, current_user
 
 from life_scheduler.auth.utils import approval_required
-from life_scheduler.board.forms import AddTrelloQuestSourceForm, AddImageGraphSourceForm, AddGoogleQuestSourceForm
+from life_scheduler.board.forms import AddTrelloQuestSourceForm, AddImageGraphSourceForm, AddGoogleQuestSourceForm, \
+    EditQuestSourceForm
 from life_scheduler.board.models import QuestSource, ImageGraphSource
 from life_scheduler.google.api import GoogleAPISession
 from life_scheduler.google.models import Google
@@ -69,6 +68,31 @@ def remove_quest_source(source_id):
 
     QuestSource.remove(source)
     return redirect(url_for("board.settings"))
+
+
+@blueprint.route("/settings/edit_quest_source/<source_id>/", methods=["GET", "POST"])
+@login_required
+@approval_required
+def edit_quest_source(source_id):
+    source: QuestSource = QuestSource.get_by_id(source_id)
+
+    if source.user.id != current_user.id:
+        abort(403)
+
+    form = EditQuestSourceForm()
+
+    if form.validate_on_submit():
+        source.set_label_name(form.label_name.data)
+        source.set_label_fg_color(form.label_fg_color.data)
+        source.set_label_bg_color(form.label_bg_color.data)
+
+        return redirect(url_for("board.settings"))
+
+    form.label_name.data = source.label_name
+    form.label_fg_color.data = source.label_fg_color
+    form.label_bg_color.data = source.label_bg_color
+
+    return render_template("board/edit_quest_source.html", form=form)
 
 
 @blueprint.route("/settings/add_image_graph_source/", methods=["GET", "POST"])

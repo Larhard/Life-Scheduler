@@ -1,0 +1,22 @@
+{% extends "_base.html" %}
+
+{% block content %}
+    <div class="container-fluid bg-light">
+        <form method="post">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                <label for="input_board">{{ form.label_name.label }}</label>
+                {{ form.label_name(class="form-control") }}
+            </div>
+            <div class="form-group">
+                <label for="input_board">{{ form.label_fg_color.label }}</label>
+                {{ form.label_fg_color(class="form-control") }}
+            </div>
+            <div class="form-group">
+                <label for="input_board">{{ form.label_bg_color.label }}</label>
+                {{ form.label_bg_color(class="form-control") }}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+{% endblock %}

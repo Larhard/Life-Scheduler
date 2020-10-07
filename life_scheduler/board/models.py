@@ -26,6 +26,8 @@ class Quest(db.Model):
 
     external_id = db.Column(db.Unicode(256), index=True)
 
+    labels = db.Column(db.JSON)
+
     is_archived = db.Column(db.Boolean, default=False, index=True)
     is_done = db.Column(db.Boolean, default=False)
 
@@ -43,6 +45,7 @@ class Quest(db.Model):
             user=None,
             source=None,
             external_id=None,
+            labels=None,
             is_archived=False,
             is_done=False,
     ):
@@ -67,6 +70,8 @@ class Quest(db.Model):
 
         self.source = source
         self.external_id = external_id
+
+        self.labels = labels
 
         self.is_archived = is_archived
         self.is_done = is_done
@@ -151,15 +156,25 @@ class QuestSource(db.Model):
     backend_id = db.Column(db.Integer)
     args = db.Column(db.JSON)
 
+    label_name = db.Column(db.Unicode(128), default="")
+    label_fg_color = db.Column(db.Unicode(128), default="white")
+    label_bg_color = db.Column(db.Unicode(128), default="gray")
+
     def __init__(
             self,
             user=None,
             backend_type=None,
             backend_id=None,
+            label_name=None,
+            label_fg_color=None,
+            label_bg_color=None,
     ):
         self.user = user
         self.backend_type = backend_type
         self.backend_id = backend_id
+        self.label_name = label_name
+        self.label_fg_color = label_fg_color
+        self.label_bg_color = label_bg_color
 
     def get_backend(self):
         if self.backend_type == "trello":
@@ -178,6 +193,18 @@ class QuestSource(db.Model):
             return GoogleQuestSourceManager(self, **self.args)
         else:
             raise ValueError(f"Unknown backend type: {self.backend_type}")
+
+    def set_label_name(self, value):
+        self.label_name = value
+        db.session.commit()
+
+    def set_label_fg_color(self, value):
+        self.label_fg_color = value
+        db.session.commit()
+
+    def set_label_bg_color(self, value):
+        self.label_bg_color = value
+        db.session.commit()
 
     def __str__(self):
         return str(self.get_manager())

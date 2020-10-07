@@ -33,6 +33,9 @@ class GoogleQuestSourceManager(QuestSourceManager):
         formatted_time_min = time_min.isoformat()
         formatted_time_max = time_max.isoformat()
 
+        colors = session.get_calendar_colors()
+        event_colors = colors["event"]
+
         for event in session.iter_calendar_events(
                 calendar_id=self.calendar_id,
                 timeMin=formatted_time_min,
@@ -45,6 +48,7 @@ class GoogleQuestSourceManager(QuestSourceManager):
                 "user": backend.user,
                 "source": self.source,
                 "external_id": event["id"],
+                "labels": list(self.process_labels(event, event_colors)),
             }
 
             start_data = event.get("start")
@@ -78,3 +82,24 @@ class GoogleQuestSourceManager(QuestSourceManager):
 
     def __str__(self):
         return f"{self.calendar_display_name}@{self.source.get_backend()}"
+
+    def process_labels(self, event, event_colors):
+        result = {
+            "type": "source",
+            "name": self.source.label_name or "",
+            "fg_color": self.source.label_fg_color or "white",
+            "bg_color": self.source.label_bg_color or "gray",
+        }
+        yield result
+
+        if "colorId" in event:
+            color_id = event["colorId"]
+            color = event_colors[color_id]
+
+            result = {
+                "type": "quest",
+                "name": "",
+                "fg_color": color["foreground"],
+                "bg_color": color["background"],
+            }
+            yield result

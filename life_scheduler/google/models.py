@@ -55,6 +55,11 @@ class Google(db.Model):
 
     @classmethod
     def remove(cls, google):
+        from life_scheduler.board.models import QuestSource
+        sources = QuestSource.query.filter_by(backend_type="google", backend_id=google.id).all()
+        for source in sources:
+            db.session.delete(source)
+
         db.session.delete(google)
         db.session.commit()
 

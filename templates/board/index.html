@@ -212,14 +212,40 @@
         }
 
         function formatQuestBodyName(data) {
-            return `<div>${htmlEscape(data.name)}</div>`;
+            return `${htmlEscape(data.name)}`;
+        }
+
+        function formatQuestBodySourceLabels(data) {
+            if (data.labels === null) {
+                return "";
+            }
+
+            let labels = data.labels;
+            labels = labels.filter(x => x.type === "source");
+            labels = labels.map(label => `<span class="badge" style="color: ${ htmlEscape(label.fg_color) }; background-color: ${ htmlEscape(label.bg_color) };">${ htmlEscape(label.name) }</span>`);
+            labels = labels.join(" ");
+            return labels;
+        }
+
+        function formatQuestBodyQuestLabels(data) {
+            if (data.labels === null) {
+                return "";
+            }
+
+            let labels = data.labels;
+            labels = labels.filter(x => x.type === "quest");
+            labels = labels.map(label => `<span class="badge" style="color: ${ htmlEscape(label.fg_color) }; background-color: ${ htmlEscape(label.bg_color) };">${ htmlEscape(label.name) }</span>`);
+            labels = labels.join(" ");
+            return labels;
         }
 
         function formatQuestBody(data) {
             let name = formatQuestBodyName(data);
             let date = formatQuestBodyDateField(data);
+            let sourceLabels = formatQuestBodySourceLabels(data);
+            let questLabels = formatQuestBodyQuestLabels(data);
 
-            return `${date}${name}`;
+            return `<div class="row"><div class="col-sm-12">${date} ${name} ${sourceLabels} ${questLabels}</div></div>`;
         }
 
         function formatQuestItem(data) {
@@ -261,6 +287,7 @@
         }
 
         function updateQuestList(data) {
+            console.log(data);
             data.forEach(questData => createOrUpdateQuest(questData));
             removeOutdatedQuests(data);
         }

@@ -32,3 +32,6 @@ class GoogleAPISession:
 
     def iter_calendar_events(self, calendar_id, **kwargs):
         return self.iter_get_pages(f"/calendar/v3/calendars/{calendar_id}/events", **kwargs)
+
+    def get_calendar_colors(self, **kwargs):
+        return self.get("/calendar/v3/colors", **kwargs)

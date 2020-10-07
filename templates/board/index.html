@@ -170,16 +170,33 @@
         }
 
         function formatQuestBodyTimestamp(date, time) {
-            /*
-            if (date !== null && time !== null) {
-                return `${formatQuestBodyDate(date)} ${formatQuestBodyTime(time)}`;
-            } else if (date !== null) {
-                return formatQuestBodyDate(date);
-            }
-            */
+            if (date !== null) {
+                let today = new Date();
+                today.setHours(0, 0, 0, 0);
 
-            if (time !== null) {
-                return formatQuestBodyTime(time);
+                let tomorrow = new Date();
+                tomorrow.setHours(0, 0, 0, 0);
+                tomorrow.setDate(tomorrow.getDate() + 1)
+
+                let questDate = new Date(`${date}`);
+
+                if (questDate < today) {
+                    return ""
+                }
+
+                if (questDate < tomorrow) {
+                    if (time !== null) {
+                        return formatQuestBodyTime(time);
+                    } else {
+                        return ""
+                    }
+                }
+
+                if (time !== null) {
+                    return `${formatQuestBodyDate(date)} ${formatQuestBodyTime(time)}`;
+                } else {
+                    return formatQuestBodyDate(date);
+                }
             }
             return "";
         }

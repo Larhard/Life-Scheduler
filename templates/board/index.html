@@ -208,7 +208,10 @@
         }
 
         function updateQuest(quest, data) {
-            quest.html(formatQuestBody(data));
+            let content = formatQuestBody(data);
+            if (quest.html() !== content) {
+                quest.html(content);
+            }
             setQuestItemDoneFlag(quest, data.is_done);
         }
 

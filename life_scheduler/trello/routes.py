@@ -1,7 +1,8 @@
 from datetime import timedelta, datetime
 
-from flask import Blueprint, current_app, request, url_for, redirect
+from flask import Blueprint, current_app, request, url_for, redirect, abort
 from flask_login import login_required, current_user
+from requests_oauthlib import OAuth1Session
 
 from life_scheduler.auth.utils import approval_required
 from life_scheduler.trello.models import Trello, TrelloTemporaryToken
@@ -49,26 +50,35 @@ def login_callback():
 
     temporary_token = TrelloTemporaryToken.get_by_token(oauth_token)
 
-    oauth = temporary_token.get_raw_session(verifier=oauth_verifier)
+    oauth: OAuth1Session = temporary_token.get_raw_session(verifier=oauth_verifier)
 
     response = oauth.fetch_access_token(access_token_request_url)
 
     oauth_token = response["oauth_token"]
     oauth_token_secret = response["oauth_token_secret"]
 
+    user_info = oauth.get("https://trello.com/1/members/me/").json()
+    print(user_info)
+
     trello = Trello(
         token=oauth_token,
         secret=oauth_token_secret,
         user=temporary_token.user,
+        username=user_info["username"],
     )
     Trello.create(trello)
 
-    return redirect(url_for("board.index"))
+    return redirect(url_for("board.settings"))
 
 
-@blueprint.route("/logout")
+@blueprint.route("/logout/<trello_id>")
 @login_required
 @approval_required
-def logout():
-    Trello.remove(current_user.trello)
-    return "OK"
+def logout(trello_id):
+    trello = Trello.get_by_id(trello_id)
+
+    if trello.user.id != current_user.id:
+        abort(403)
+
+    Trello.remove(trello)
+    return redirect(url_for("board.settings"))

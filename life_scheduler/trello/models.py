@@ -1,6 +1,5 @@
 from flask import current_app
 from requests_oauthlib import OAuth1Session
-from sqlalchemy.orm import backref
 
 from life_scheduler import db
 from life_scheduler.trello.api import TrelloAPISession
@@ -10,14 +9,16 @@ class Trello(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     token = db.Column(db.String(256), index=True, unique=True, nullable=False)
     secret = db.Column(db.String(256), nullable=False)
+    username = db.Column(db.String(256))
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    user = db.relationship("User", backref=backref("trello", uselist=False))
+    user = db.relationship("User", backref="trellos")
 
-    def __init__(self, token, secret, user):
+    def __init__(self, token, secret, user, username=None):
         self.token = token
         self.secret = secret
         self.user = user
+        self.username = username
 
     def get_raw_session(self, **kwargs):
         client_key = current_app.config["TRELLO_API_KEY"]
@@ -33,6 +34,9 @@ class Trello(db.Model):
 
     def get_session(self):
         return TrelloAPISession(self.get_raw_session())
+
+    def __str__(self):
+        return f"{self.username}"
 
     @classmethod
     def create(cls, trello):

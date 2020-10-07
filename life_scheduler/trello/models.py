@@ -36,7 +36,7 @@ class Trello(db.Model):
         return TrelloAPISession(self.get_raw_session())
 
     def __str__(self):
-        return f"{self.username}"
+        return f"{self.username}@Trello"
 
     @classmethod
     def create(cls, trello):

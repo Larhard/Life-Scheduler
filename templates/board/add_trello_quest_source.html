@@ -2,8 +2,8 @@
 
 {% block content %}
     {% with %}
-        {% set trello = current_user.trello.get_session()  %}
-        {% set boards = trello.get_boards(filter="open") %}
+        {% set session = trello.get_session()  %}
+        {% set boards = session.get_boards(filter="open") %}
         <div class="container-fluid bg-light">
             <form method="post">
                 {{ form.hidden_tag() }}
@@ -19,7 +19,7 @@
                     <label for="input_list">{{ form.board.label }}</label>
                     <select class="form-control" id="input_list" name="{{ form.list.name }}">
                         {% for board in boards %}
-                            {% for list in trello.get_lists(board["id"], filter="open") %}
+                            {% for list in session.get_lists(board["id"], filter="open") %}
                                 <option value="{{ list["id"] }}" board="{{ board["id"] }}">{{ list["name"] }}</option>
                             {% endfor %}
                         {% endfor %}

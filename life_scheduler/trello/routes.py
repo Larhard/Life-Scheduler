@@ -58,7 +58,6 @@ def login_callback():
     oauth_token_secret = response["oauth_token_secret"]
 
     user_info = oauth.get("https://trello.com/1/members/me/").json()
-    print(user_info)
 
     trello = Trello(
         token=oauth_token,

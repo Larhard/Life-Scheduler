@@ -11,7 +11,6 @@
                 </li>
             {% endfor %}
         </ul>
-        <a href="{{ url_for("board.add_trello_quest_source") }}" class="btn btn-primary">Add Trello source</a>
     </div>
     <div class="container-fluid bg-light">
         <h1>Graphs</h1>
@@ -41,9 +40,14 @@
         <h1>Trello</h1>
         <ul class="list-group">
             {% for trello in current_user.trellos %}
-                <li id="trello-{{ trello.id }}" class="list-group-item">
-                    {{ trello }}
-                    <a href="{{ url_for("trello.logout", trello_id=trello.id) }}" class="btn btn-danger btn-sm float-right">Remove</a>
+                <li id="trello-{{ trello.id }}" class="list-group-item container-fluid">
+                    <div class="row">
+                        <div class="col-sm-6">{{ trello }}</div>
+                        <div class="col-sm-6 text-right">
+                            <a href="{{ url_for("board.add_trello_quest_source", trello_id=trello.id) }}" class="btn btn-primary btn-sm">Add quest source</a>
+                            <a href="{{ url_for("trello.logout", trello_id=trello.id) }}" class="btn btn-danger btn-sm">Remove</a>
+                        </div>
+                    </div>
                 </li>
             {% endfor %}
         </ul>

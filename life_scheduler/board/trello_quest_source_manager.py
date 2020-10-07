@@ -51,4 +51,4 @@ class TrelloQuestSourceManager(QuestSourceManager):
         db.session.commit()
 
     def __str__(self):
-        return f"Trello: {self.board_display_name}/{self.list_display_name}"
+        return f"{self.board_display_name}/{self.list_display_name}@{self.source.get_backend()}"

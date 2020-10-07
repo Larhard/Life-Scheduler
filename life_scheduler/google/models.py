@@ -22,7 +22,7 @@ class Google(db.Model):
         self.user = user
 
     def __str__(self):
-        return f"{self.email}"
+        return f"{self.email}@Google"
 
     @classmethod
     def create(cls, google):

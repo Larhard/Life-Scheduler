@@ -4,6 +4,7 @@ from flask_login import login_required, current_user
 from life_scheduler.auth.utils import approval_required
 from life_scheduler.board.forms import AddTrelloQuestSourceForm, AddImageGraphSourceForm
 from life_scheduler.board.models import QuestSource, ImageGraphSource
+from life_scheduler.trello.models import Trello
 
 blueprint = Blueprint("board", __name__)
 
@@ -22,14 +23,18 @@ def settings():
     return render_template("board/settings.html")
 
 
-@blueprint.route("/settings/add_trello_quest_source", methods=["GET", "POST"])
+@blueprint.route("/settings/add_trello_quest_source/<trello_id>", methods=["GET", "POST"])
 @login_required
 @approval_required
-def add_trello_quest_source():
+def add_trello_quest_source(trello_id):
+    trello = Trello.get_by_id(trello_id)
+    if trello.user.id != current_user.id:
+        abort(403)
+
     form = AddTrelloQuestSourceForm()
 
     if form.validate_on_submit():
-        session = current_user.trello.get_session()
+        session = trello.get_session()
 
         board_id = form.board.data
         list_id = form.list.data
@@ -37,7 +42,7 @@ def add_trello_quest_source():
         list_display_name = session.get_list(list_id)["name"]
 
         QuestSource.register(
-            current_user.trello,
+            backend=trello,
             board_id=board_id,
             list_id=list_id,
             board_display_name=board_display_name,
@@ -46,7 +51,7 @@ def add_trello_quest_source():
 
         return redirect(url_for("board.settings"))
 
-    return render_template("board/add_trello_quest_source.html", form=form)
+    return render_template("board/add_trello_quest_source.html", form=form, trello=trello)
 
 
 @blueprint.route("/settings/remove_quest_source/<source_id>", methods=["GET"])

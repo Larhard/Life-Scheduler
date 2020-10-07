@@ -1,5 +1,10 @@
 {% extends "_base.html" %}
 
+{% block css %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for("static", filename="css/board.css") }}">
+{% endblock %}
+
 {% block content %}
     <header class="navbar sticky-top bg-dark" role="navigation">
         <div class="col-sm-3 col-12">
@@ -183,7 +188,7 @@
             let start = formatQuestBodyTimestamp(data.start_date, data.start_time);
 
             if (start !== "") {
-                return `<div class="text-secondary float-right" style="font-size: 0.9rem;">${start}</div>`
+                return `<div class="quest-text-secondary float-right" style="font-size: 0.9rem;">${start}</div>`
             }
 
             return ""
@@ -198,7 +203,6 @@
             let date = formatQuestBodyDateField(data);
 
             return `${date}${name}`;
-            {#return `<div class="row">${date}${name}</div>`;#}
         }
 
         function formatQuestItem(data) {
@@ -360,10 +364,8 @@
         function setQuestItemDoneFlag(questItem, flag) {
             if (flag) {
                 questItem.addClass("quest-done");
-                questItem.addClass("bg-success");
             } else {
                 questItem.removeClass("quest-done");
-                questItem.removeClass("bg-success");
             }
         }
 

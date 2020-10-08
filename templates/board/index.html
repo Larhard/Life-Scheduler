@@ -29,16 +29,6 @@
                     Archivize
                 </button>
             </div>
-            <div class="col-sm-3 col-12 p-1">
-                <button id="push-order-button" class="btn btn-primary btn-block job-button" type="button">
-                    Push order
-                </button>
-            </div>
-            <div class="col-sm-3 col-12 p-1">
-                <button id="pull-order-button" class="btn btn-primary btn-block job-button" type="button">
-                    Pull order
-                </button>
-            </div>
         </div>
     </div>
 
@@ -77,16 +67,6 @@
         const archivizeButtonInProgressHTML = '<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Archivizing...';
         const archivizeButtonFailedHTML = "Archivization failed";
 
-        const pushOrderButton = $("#push-order-button");
-        const pushOrderButtonReadyHTML = pushOrderButton.html();
-        const pushOrderButtonInProgressHTML = '<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Pushing order...';
-        const pushOrderButtonFailedHTML = "Pushing order failed";
-
-        const pullOrderButton = $("#pull-order-button");
-        const pullOrderButtonReadyHTML = pullOrderButton.html();
-        const pullOrderButtonInProgressHTML = '<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Pulling order...';
-        const pullOrderButtonFailedHTML = "Pulling order failed";
-
         const jobButtons = $(".job-button");
 
         const batteryLevelField = $("#battery-level");
@@ -100,23 +80,17 @@
         const clockField = $("#clock")
 
         let jobInProgress = false;
+        let questOrder = [];
 
         const questList = $("#quest-list");
 
-        function doInitialPull() {
-            return doInitializeQuestPull()
-                .then(doInvokeQuestPull)
-                .then(doRestoreQuestList)
-                .then(doFinishPull)
-                .then(doStoreQuestOrder)
-                .fail(doNotifyPullFailure)
-                .fail(doNotifyFailure);
-        }
-
         function doPull() {
             return doInitializeQuestPull()
+                .then(doPullOrderFromServer)
+                .then(doCleanQuestOrderIfChanged)
+                .then(doSaveQuestOrderToCache)
                 .then(doInvokeQuestPull)
-                .then(doUpdateQuestList)
+                .then(doRestoreQuestList)
                 .then(doFinishPull)
                 .then(doStoreQuestOrder)
                 .fail(doNotifyPullFailure)
@@ -150,12 +124,12 @@
                 });
         }
 
-        function doCleanQuestList() {
+        function doCleanQuestList(data) {
             let deferred = $.Deferred();
 
             questList.html("");
 
-            deferred.resolve();
+            deferred.resolve(data);
             return deferred;
         }
 
@@ -348,8 +322,7 @@
         function doSaveQuestOrderToCache(order) {
             let deferred = $.Deferred();
 
-            let data = JSON.stringify(order);
-            Cookies.set("questOrder", data, {expires: 365});
+            questOrder = order
 
             deferred.resolve(order);
             return deferred;
@@ -358,6 +331,7 @@
         function doStoreQuestOrder() {
             return doGetQuestOrder()
                 .then(doSaveQuestOrderToCache)
+                .then(doPushOrderToServer)
                 .fail(doNotifyFailure);
         }
 
@@ -369,12 +343,7 @@
         }
 
         function restoreQuestList(data) {
-            let orderData = Cookies.get("questOrder");
-            if (orderData) {
-                let order = JSON.parse(orderData);
-
-                order.forEach(questId => tryRestoreQuestById(questId, data));
-            }
+            questOrder.forEach(questId => tryRestoreQuestById(questId, data));
         }
 
         function doArchivize() {
@@ -534,93 +503,8 @@
             return deferred;
         }
 
-        function doInitializeOrderPull() {
-            let deferred = $.Deferred();
-
-            if (jobInProgress) {
-                deferred.reject();
-            } else {
-                jobInProgress = true;
-                jobButtons.addClass("disabled")
-                pullOrderButton.html(pullOrderButtonInProgressHTML);
-
-                deferred.resolve()
-            }
-
-            return deferred;
-        }
-
-        function doInitializeOrderPush() {
-            let deferred = $.Deferred();
-
-            if (jobInProgress) {
-                deferred.reject();
-            } else {
-                jobInProgress = true;
-                jobButtons.addClass("disabled")
-                pushOrderButton.html(pushOrderButtonInProgressHTML);
-
-                deferred.resolve()
-            }
-
-            return deferred;
-        }
-
-        function doNotifyOrderPullFailure() {
-            let deferred = $.Deferred();
-
-            pullOrderButton.html(pullOrderButtonFailedHTML);
-            pullOrderButton.addClass("btn-danger");
-            pullOrderButton.removeClass("btn-primary");
-            jobButtons.removeClass("disabled");
-            jobInProgress = false;
-
-            deferred.resolve();
-            return deferred;
-        }
-
-        function doNotifyOrderPushFailure() {
-            let deferred = $.Deferred();
-
-            pushOrderButton.html(pushOrderButtonFailedHTML);
-            pushOrderButton.addClass("btn-danger");
-            pushOrderButton.removeClass("btn-primary");
-            jobButtons.removeClass("disabled");
-            jobInProgress = false;
-
-            deferred.resolve();
-            return deferred;
-        }
-
-        function doFinishPullOrder() {
-            let deferred = $.Deferred();
-
-            pullOrderButton.html(pullOrderButtonReadyHTML);
-            pullOrderButton.addClass("btn-primary");
-            pullOrderButton.removeClass("btn-danger");
-            jobButtons.removeClass("disabled")
-            jobInProgress = false;
-
-            deferred.resolve();
-            return deferred;
-        }
-
-        function doFinishPushOrder() {
-            let deferred = $.Deferred();
-
-            pushOrderButton.html(pushOrderButtonReadyHTML);
-            pushOrderButton.addClass("btn-primary");
-            pushOrderButton.removeClass("btn-danger");
-            jobButtons.removeClass("disabled")
-            jobInProgress = false;
-
-            deferred.resolve();
-            return deferred;
-        }
-
         function doPushOrderToServer() {
-            let orderData = Cookies.get("questOrder");
-            let order = JSON.parse(orderData);
+            let orderData = JSON.stringify(questOrder);
             return $.ajax({
                 type: "PUT",
                 url: "{{ url_for("board_api.quests_order") }}",
@@ -630,7 +514,8 @@
         }
 
         function doPullOrderFromServer() {
-            return $.get("{{ url_for("board_api.quests_order") }}");
+            return $.get("{{ url_for("board_api.quests_order") }}")
+                .then(doJSONParse);
         }
 
         function doJSONParse(data) {
@@ -643,10 +528,23 @@
             return deferred
         }
 
+        function doNothing(data) {
+            let deferred = $.Deferred();
+            deferred.resolve(data);
+            return deferred;
+        }
+
+        function doCleanQuestOrderIfChanged(order) {
+            if (JSON.stringify(questOrder) != JSON.stringify(order)) {
+                return doCleanQuestList(order);
+            } else {
+                return doNothing(order);
+            }
+        }
+
         function doPullOrder() {
             return doInitializeOrderPull()
                 .then(doPullOrderFromServer)
-                .then(doJSONParse)
                 .then(doSaveQuestOrderToCache)
                 .then(doCleanQuestList)
                 .then(doRestoreQuestList)
@@ -697,8 +595,6 @@
 
         pullButton.on("click", doPull);
         archivizeButton.on("click", doArchivize);
-        pushOrderButton.on("click", doPushOrder);
-        pullOrderButton.on("click", doPullOrder);
         $(document).on("click", ".quest-item", doToggleDone);
 
         questList.sortable({
@@ -707,7 +603,7 @@
         questList.disableSelection();
 
         $(function () {
-            doInitialPull();
+            doPull();
             setInterval(doPull, autoPullInterval);
             setInterval(doUpdateClock, 1000);
             initRefreshers();

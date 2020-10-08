@@ -306,7 +306,7 @@
             let deferred = $.Deferred();
 
             let data = JSON.stringify(order);
-            Cookies.set("questOrder", data);
+            Cookies.set("questOrder", data, {expires: 365});
 
             deferred.resolve(order);
             return deferred;

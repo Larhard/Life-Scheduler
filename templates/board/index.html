@@ -6,24 +6,41 @@
 {% endblock %}
 
 {% block content %}
-    <header class="navbar sticky-top bg-dark" role="navigation">
-        <div class="col-sm-3 col-12">
-            <button id="pull-button" class="btn btn-primary btn-block job-button" type="button">
-                Pull
-            </button>
+    <nav id="navbar" class="navbar sticky-top bg-dark" role="navigation">
+        <div>
+            <img data-toggle="collapse" data-target="#navbarButtons" src="{{ url_for("static", filename="images/icon.png") }}" style="height: 2.5rem; cursor: pointer;" alt="Life Scheduler"/>
         </div>
-        <div class="col-sm-3 col-12">
-            <button id="archivize-button" class="btn btn-primary btn-block job-button" type="button">
-                Archivize
-            </button>
-        </div>
-        <div class="col-sm-4"></div>
-        <div class="col-sm-2 col-12 text-white text-right text-monospace">
+        <div class="text-white text-right text-monospace">
             <span id="battery-level"></span>
             <span id="battery-charging-icon"></span>
             <span id="clock"></span>
         </div>
-    </header>
+    </nav>
+
+    <div id="navbarButtons" class="collapse bg-dark container-fluid">
+        <div class="row">
+            <div class="col-sm-3 col-12 p-1">
+                <button id="pull-button" class="btn btn-primary btn-block job-button" type="button">
+                    Pull
+                </button>
+            </div>
+            <div class="col-sm-3 col-12 p-1">
+                <button id="archivize-button" class="btn btn-primary btn-block job-button" type="button">
+                    Archivize
+                </button>
+            </div>
+{#            <div class="col-sm-3 col-12 p-1">#}
+{#                <button id="push-order-button" class="btn btn-primary btn-block job-button" type="button">#}
+{#                    Push order#}
+{#                </button>#}
+{#            </div>#}
+{#            <div class="col-sm-3 col-12 p-1">#}
+{#                <button id="pull-order-button" class="btn btn-primary btn-block job-button" type="button">#}
+{#                    Pull order#}
+{#                </button>#}
+{#            </div>#}
+        </div>
+    </div>
 
     <div class="container-fluid">
         <div class="row">
@@ -60,6 +77,16 @@
         const archivizeButtonInProgressHTML = '<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Archivizing...';
         const archivizeButtonFailedHTML = "Archivization failed";
 
+        const pushOrderButton = $("#push-order-button");
+        const pushOrderButtonReadyHTML = pushOrderButton.html();
+        const pushOrderButtonInProgressHTML = '<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Pushing order...';
+        const pushOrderButtonFailedHTML = "Pushing order failed";
+
+        const pullOrderButton = $("#pull-order-button");
+        const pullOrderButtonReadyHTML = pullOrderButton.html();
+        const pullOrderButtonInProgressHTML = '<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Pulling order...';
+        const pullOrderButtonFailedHTML = "Pulling order failed";
+
         const jobButtons = $(".job-button");
 
         const batteryLevelField = $("#battery-level");
@@ -67,6 +94,8 @@
 
         const batteryChargingIcon = '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-battery-charging" fill="currentColor" xmlns="http://www.w3.org/2000/svg"> <path d="M14.5 9.5a1.5 1.5 0 0 0 0-3v3z"/> <path fill-rule="evenodd" d="M9.585 2.568a.5.5 0 0 1 .226.58L8.677 6.832h1.99a.5.5 0 0 1 .364.843l-5.334 5.667a.5.5 0 0 1-.842-.49L5.99 9.167H4a.5.5 0 0 1-.364-.843l5.333-5.667a.5.5 0 0 1 .616-.09z"/> <path fill-rule="evenodd" d="M6.332 4H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2.072l.307-1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3.391l.941-1zM4.45 6H2v4h1.313a1.5 1.5 0 0 1-.405-2.361L4.45 6zm.976 5l-.308 1H6.96l.21-.224h.001l.73-.776H6.53l-.085.09.028-.09H5.426zm1.354-1H5.733l.257-.833H4a.5.5 0 0 1-.364-.843l.793-.843L5.823 6h1.373L5.157 8.167h1.51a.5.5 0 0 1 .478.647L6.78 10zm.69 0h1.374l1.394-1.482.793-.842a.5.5 0 0 0-.364-.843h-1.99L8.933 6H7.887l-.166.54-.199.646A.5.5 0 0 0 8 7.833h1.51L7.47 10zm.725-5H9.24l.308-1H7.706l-.942 1h1.374l.085-.09-.028.09zm2.4-1l-.308 1H12a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H9.276l-.942 1H12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.405zm-.378 6H12V8.02a1.499 1.499 0 0 1-.241.341L10.217 10zM12 6.646V6h-.646a1.5 1.5 0 0 1 .646.646z"/> </svg>'
         const batteryDischargingIcon = '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-battery-half" fill="currentColor" xmlns="http://www.w3.org/2000/svg">\n  <path fill-rule="evenodd" d="M12 5H2a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1zM2 4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H2z"/>\n  <path d="M2 6h5v4H2V6zm12.5 3.5a1.5 1.5 0 0 0 0-3v3z"/>\n</svg>'
+
+        const navbar = $("#navbar")
 
         const clockField = $("#clock")
 
@@ -80,7 +109,8 @@
                 .then(doRestoreQuestList)
                 .then(doFinishPull)
                 .then(doStoreQuestOrder)
-                .fail(doNotifyPullFailure);
+                .fail(doNotifyPullFailure)
+                .fail(doNotifyFailure);
         }
 
         function doPull() {
@@ -89,20 +119,22 @@
                 .then(doUpdateQuestList)
                 .then(doFinishPull)
                 .then(doStoreQuestOrder)
-                .fail(doNotifyPullFailure);
+                .fail(doNotifyPullFailure)
+                .fail(doNotifyFailure);
         }
 
         function doInitializeQuestPull() {
             let deferred = $.Deferred();
 
             if (jobInProgress) {
-                return;
-            }
-            jobInProgress = true;
-            jobButtons.addClass("disabled")
-            pullButton.html(pullButtonInProgressHTML);
+                deferred.reject();
+            } else {
+                jobInProgress = true;
+                jobButtons.addClass("disabled")
+                pullButton.html(pullButtonInProgressHTML);
 
-            deferred.resolve()
+                deferred.resolve();
+            }
 
             return deferred;
         }
@@ -290,7 +322,6 @@
         }
 
         function updateQuestList(data) {
-            console.log(data);
             data.forEach(questData => createOrUpdateQuest(questData));
             removeOutdatedQuests(data);
         }
@@ -317,7 +348,8 @@
 
         function doStoreQuestOrder() {
             return doGetQuestOrder()
-                .then(doSaveQuestOrderToCache);
+                .then(doSaveQuestOrderToCache)
+                .fail(doNotifyFailure);
         }
 
         function tryRestoreQuestById(questId, data) {
@@ -342,19 +374,21 @@
                 .then(doUpdateQuestList)
                 .then(doFinishArchivization)
                 .fail(doNotifyArchivizationFailure)
+                .fail(doNotifyFailure);
         }
 
         function doInitializeArchivization() {
             let deferred = $.Deferred();
 
             if (jobInProgress) {
-                return;
-            }
-            jobInProgress = true;
-            jobButtons.addClass("disabled")
-            archivizeButton.html(archivizeButtonInProgressHTML);
+                deferred.reject();
+            } else {
+                jobInProgress = true;
+                jobButtons.addClass("disabled")
+                archivizeButton.html(archivizeButtonInProgressHTML);
 
-            deferred.resolve()
+                deferred.resolve();
+            }
 
             return deferred;
         }
@@ -396,6 +430,7 @@
         function doToggleDone() {
             return doToggleDoneClass($(this))
                 .then(doUpdateServerDoneStatus)
+                .fail(doNotifyFailure);
         }
 
         function doToggleDoneClass(questItem) {
@@ -490,6 +525,66 @@
             return deferred;
         }
 
+        function doInitializeOrderPull() {
+            let deferred = $.Deferred();
+
+            if (jobInProgress) {
+                deferred.reject();
+            } else {
+                jobInProgress = true;
+                jobButtons.addClass("disabled")
+                pullOrderButton.html(pullOrderButtonInProgressHTML);
+
+                deferred.resolve()
+            }
+
+            return deferred;
+        }
+
+        function doInitializeOrderPush() {
+            let deferred = $.Deferred();
+
+            if (jobInProgress) {
+                deferred.reject();
+            } else {
+                jobInProgress = true;
+                jobButtons.addClass("disabled")
+                pushOrderButton.html(pushOrderButtonInProgressHTML);
+
+                deferred.resolve()
+            }
+
+            return deferred;
+        }
+
+        function doPullOrder() {
+            return doInitializeOrderPull();
+        }
+
+        function doPushOrder() {
+            return doInitializeOrderPush();
+        }
+
+        function doNotifyFailure() {
+            let deferred = $.Deferred();
+
+            navbar.addClass("bg-danger");
+            navbar.removeClass("bg-dark");
+
+            deferred.resolve();
+            return deferred;
+        }
+
+        function doResetFailure() {
+            let deferred = $.Deferred();
+
+            navbar.addClass("bg-dark");
+            navbar.removeClass("bg-danger");
+
+            deferred.resolve();
+            return deferred;
+        }
+
         navigator.getBattery().then(function (battery) {
             setBatteryLevel(battery.level);
             setBatteryCharging(battery.charging);
@@ -504,6 +599,8 @@
 
         pullButton.on("click", doPull);
         archivizeButton.on("click", doArchivize);
+        pushOrderButton.on("click", doPushOrder);
+        pullOrderButton.on("click", doPullOrder);
         $(document).on("click", ".quest-item", doToggleDone);
 
         questList.sortable({

@@ -61,7 +61,7 @@
         const pullButtonFailedHTML = "Pull failed";
 
         const autoPullInterval = 10 * 60 * 1000;
-        const questSoonUpdateInterval = 120 * 1000;
+        const questSoonUpdateInterval = 30 * 1000;
         const questSoonThreshold = 60 * 60 * 1000;
 
         const archivizeButton = $("#archivize-button");
@@ -598,9 +598,9 @@
                         let startDatetime = new Date(startDatetimeText);
 
                         let threshold = new Date();
-                        threshold.setMilliseconds(threshold.getMilliseconds() - questSoonThreshold);
+                        threshold.setMilliseconds(threshold.getMilliseconds() + questSoonThreshold);
 
-                        if (startDatetime > threshold) {
+                        if (startDatetime < threshold) {
                             $(this).addClass("quest-soon");
                         }
                     }

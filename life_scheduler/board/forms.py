@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, IntegerField, SelectField
+from wtforms import StringField, SubmitField, IntegerField, SelectField, TextAreaField
 
 
 class AddTrelloQuestSourceForm(FlaskForm):
@@ -23,4 +23,5 @@ class EditQuestSourceForm(FlaskForm):
     label_name = StringField()
     label_fg_color = StringField()
     label_bg_color = StringField()
+    blacklist = TextAreaField()
     submit = SubmitField("Save")

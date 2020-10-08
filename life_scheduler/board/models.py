@@ -1,3 +1,5 @@
+import re
+
 from datetime import datetime
 
 from sqlalchemy.orm import backref
@@ -127,6 +129,10 @@ class Quest(db.Model):
 
     @classmethod
     def create_or_update(cls, quest_dict):
+        source = quest_dict["source"]
+        if not source.validate_quest_dict(quest_dict):
+            quest_dict["is_archived"] = True
+
         old_quest = cls.get_by_external_id(quest_dict["external_id"], quest_dict["source"])
         if not old_quest:
             quest = Quest(**quest_dict)
@@ -160,6 +166,8 @@ class QuestSource(db.Model):
     label_name = db.Column(db.Unicode(128), default="")
     label_fg_color = db.Column(db.Unicode(128), default="white")
     label_bg_color = db.Column(db.Unicode(128), default="gray")
+
+    blacklist = db.Column(db.UnicodeText)
 
     def __init__(
             self,
@@ -206,6 +214,18 @@ class QuestSource(db.Model):
     def set_label_bg_color(self, value):
         self.label_bg_color = value
         db.session.commit()
+
+    def set_blacklist(self, value):
+        self.blacklist = value
+        db.session.commit()
+
+    def validate_quest_dict(self, quest_dict):
+        if self.blacklist is not None:
+            for line in self.blacklist.splitlines():
+                if re.match(f"^{line}$", quest_dict["name"]):
+                    return False
+
+        return True
 
     def __str__(self):
         return str(self.get_manager())

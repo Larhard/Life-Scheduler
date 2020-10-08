@@ -16,6 +16,10 @@
                 <label for="input_board">{{ form.label_bg_color.label }}</label>
                 {{ form.label_bg_color(class="form-control") }}
             </div>
+            <div class="form-group">
+                <label for="input_board">{{ form.blacklist.label }}</label>
+                {{ form.blacklist(class="form-control") }}
+            </div>
             {{ form.submit(class="btn btn-primary") }}
         </form>
     </div>

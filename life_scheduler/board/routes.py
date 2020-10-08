@@ -85,12 +85,14 @@ def edit_quest_source(source_id):
         source.set_label_name(form.label_name.data)
         source.set_label_fg_color(form.label_fg_color.data)
         source.set_label_bg_color(form.label_bg_color.data)
+        source.set_blacklist(form.blacklist.data)
 
         return redirect(url_for("board.settings"))
 
     form.label_name.data = source.label_name
     form.label_fg_color.data = source.label_fg_color
     form.label_bg_color.data = source.label_bg_color
+    form.blacklist.data = source.blacklist
 
     return render_template("board/edit_quest_source.html", form=form)
 

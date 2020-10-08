@@ -267,15 +267,14 @@ class QuestSource(db.Model):
 class ImageGraphSource(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.UnicodeText, nullable=False)
-    refresh_rate = db.Column(db.Integer)
+    refresh_rate = db.Column(db.Integer)  # TODO remove
     priority = db.Column(db.Integer)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     user = db.relationship("User", backref=backref("image_graph_sources", lazy="dynamic"))
 
-    def __init__(self, url=None, refresh_rate=None, user=None):
+    def __init__(self, url=None, user=None):
         self.url = url
-        self.refresh_rate = refresh_rate
         self.user = user
 
     def set_priority(self, value):

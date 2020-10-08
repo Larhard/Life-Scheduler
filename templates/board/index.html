@@ -45,7 +45,7 @@
                 <ul id="graphs-list" class="list-group">
                     {% for graph_source in current_user.image_graph_sources.order_by("priority").all() %}
                         <li id="graph-{{ graph_source.id }}" class="list-group-item">
-                            <img src="{{ graph_source.url }}" alt="{{ graph_source.url }}" class="w-100" {% if graph_source.refresh_rate %}refresh="{{ graph_source.refresh_rate }}"{% endif %}/>
+                            <img src="{{ graph_source.url }}" alt="{{ graph_source.url }}" class="w-100 refreshable"/>
                         </li>
                     {% endfor %}
                 </ul>
@@ -72,6 +72,8 @@
         const archivizeButtonInProgressHTML = '<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Archivizing...';
         const archivizeButtonFailedHTML = "Archivization failed";
 
+        const refreshableImages = $("img.refreshable");
+
         const jobButtons = $(".job-button");
 
         const batteryLevelField = $("#battery-level");
@@ -93,6 +95,7 @@
 
         function doPull() {
             return doInitializeQuestPull()
+                .then(doRefreshImages)
                 .then(doPullOrderFromServer)
                 .then(doCleanQuestOrderIfChanged)
                 .then(doSaveQuestOrderToCache)
@@ -474,13 +477,13 @@
             batteryChargingIconField.html(getBatteryChargingIcon(charging));
         }
 
-        function refreshSrc() {
-            if (! this.attr("baseSrc")) {
-                let src = this.attr("src");
-                this.attr("baseSrc", src);
+        function refreshSrc(img) {
+            if (! img.attr("baseSrc")) {
+                let src = img.attr("src");
+                img.attr("baseSrc", src);
             }
 
-            let baseSrc = this.attr("baseSrc");
+            let baseSrc = img.attr("baseSrc");
             let timestampParam = `timestamp=${new Date().getTime()}`;
             let separator;
 
@@ -491,16 +494,18 @@
             }
 
             let src = `${baseSrc}${separator}${timestampParam}`;
-            this.attr("src", src);
+            img.attr("src", src);
         }
 
-        function initRefreshers() {
-            let refreshable = $("[refresh]");
-            refreshable.each(function() {
-                let refreshRate = $(this).attr("refresh");
-                let handler = refreshSrc.bind($(this))
-                setInterval(handler, refreshRate * 1000)
+        function doRefreshImages(data) {
+            let deferred = $.Deferred();
+
+            refreshableImages.each(function() {
+                refreshSrc($(this))
             });
+
+            deferred.resolve(data);
+            return deferred;
         }
 
         Number.prototype.padZero = function(length) {
@@ -654,7 +659,6 @@
             setInterval(doPull, autoPullInterval);
             setInterval(doUpdateClock, 1000);
             setInterval(doUpdateQuestSoon, questSoonUpdateInterval);
-            initRefreshers();
             window.onfocus = doSoftPull;
         });
     </script>

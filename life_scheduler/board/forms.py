@@ -10,7 +10,6 @@ class AddTrelloQuestSourceForm(FlaskForm):
 
 class AddImageGraphSourceForm(FlaskForm):
     url = StringField()
-    refresh_rate = IntegerField(default=0)
     submit = SubmitField("Create")
 
 

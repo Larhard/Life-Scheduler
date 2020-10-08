@@ -105,14 +105,9 @@ def add_image_graph_source():
 
     if form.validate_on_submit():
         url = form.url.data
-        refresh_rate = form.refresh_rate.data
-
-        if refresh_rate <= 0:
-            refresh_rate = None
 
         source = ImageGraphSource(
             url=url,
-            refresh_rate=refresh_rate,
             user=current_user,
         )
         ImageGraphSource.create(source)

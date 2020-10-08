@@ -61,6 +61,8 @@
         const pullButtonFailedHTML = "Pull failed";
 
         const autoPullInterval = 10 * 60 * 1000;
+        const questSoonUpdateInterval = 120 * 1000;
+        const questSoonThreshold = 60 * 60 * 1000;
 
         const archivizeButton = $("#archivize-button");
         const archivizeButtonReadyHTML = archivizeButton.html();
@@ -91,6 +93,7 @@
                 .then(doSaveQuestOrderToCache)
                 .then(doInvokeQuestPull)
                 .then(doRestoreQuestList)
+                .then(doUpdateQuestSoon)
                 .then(doFinishPull)
                 .then(doStoreQuestOrder)
                 .fail(doNotifyPullFailure)
@@ -223,7 +226,7 @@
             let start = formatQuestBodyTimestamp(data.start_date, data.start_time);
 
             if (start !== "") {
-                return `<div class="quest-text-secondary float-right" style="font-size: 0.9rem;">${start}</div>`
+                return `<div class="quest-time float-right" startDatetime="${data.start_date} ${data.start_time}">${start}</div>`
             }
 
             return ""
@@ -407,6 +410,7 @@
 
         function doToggleDone() {
             return doToggleDoneClass($(this))
+                .then(doUpdateQuestSoon)
                 .then(doUpdateServerDoneStatus)
                 .fail(doNotifyFailure);
         }
@@ -581,6 +585,32 @@
             return deferred;
         }
 
+        function doUpdateQuestSoon(data) {
+            let deferred = $.Deferred();
+
+            questList.find("li").each(function () {
+                if ($(this).hasClass("quest-done")) {
+                    $(this).removeClass("quest-soon")
+                } else {
+                    let startDatetimeFields = $(this).find("[startDatetime]");
+                    if (startDatetimeFields.length > 0) {
+                        let startDatetimeText = startDatetimeFields[0].getAttribute("startDatetime");
+                        let startDatetime = new Date(startDatetimeText);
+
+                        let threshold = new Date();
+                        threshold.setMilliseconds(threshold.getMilliseconds() - questSoonThreshold);
+
+                        if (startDatetime > threshold) {
+                            $(this).addClass("quest-soon");
+                        }
+                    }
+                }
+            });
+
+            deferred.resolve(data);
+            return deferred;
+        }
+
         navigator.getBattery().then(function (battery) {
             setBatteryLevel(battery.level);
             setBatteryCharging(battery.charging);
@@ -606,6 +636,7 @@
             doPull();
             setInterval(doPull, autoPullInterval);
             setInterval(doUpdateClock, 1000);
+            setInterval(doUpdateQuestSoon, questSoonUpdateInterval);
             initRefreshers();
         });
     </script>

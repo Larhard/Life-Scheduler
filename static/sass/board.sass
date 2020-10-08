@@ -4,8 +4,18 @@
   background-color: $success
   color: $white
 
-.quest-done .quest-text-secondary
+.quest-time
+  color: $secondary
+  display: inline-block
+  font-weight: $badge-font-weight
+  line-height: 1
+  font-size: 0.9rem
+  padding: $badge-padding-y $badge-padding-x
+  @include border-radius($badge-border-radius)
+
+.quest-done .quest-time
   color: $white
 
-.quest-text-secondary
-  color: $secondary
+.quest-soon .quest-time
+  color: $white
+  background-color: red

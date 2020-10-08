@@ -29,16 +29,16 @@
                     Archivize
                 </button>
             </div>
-{#            <div class="col-sm-3 col-12 p-1">#}
-{#                <button id="push-order-button" class="btn btn-primary btn-block job-button" type="button">#}
-{#                    Push order#}
-{#                </button>#}
-{#            </div>#}
-{#            <div class="col-sm-3 col-12 p-1">#}
-{#                <button id="pull-order-button" class="btn btn-primary btn-block job-button" type="button">#}
-{#                    Pull order#}
-{#                </button>#}
-{#            </div>#}
+            <div class="col-sm-3 col-12 p-1">
+                <button id="push-order-button" class="btn btn-primary btn-block job-button" type="button">
+                    Push order
+                </button>
+            </div>
+            <div class="col-sm-3 col-12 p-1">
+                <button id="pull-order-button" class="btn btn-primary btn-block job-button" type="button">
+                    Pull order
+                </button>
+            </div>
         </div>
     </div>
 
@@ -148,6 +148,15 @@
                 .done(function (data) {
                     updateQuestList(data);
                 });
+        }
+
+        function doCleanQuestList() {
+            let deferred = $.Deferred();
+
+            questList.html("");
+
+            deferred.resolve();
+            return deferred;
         }
 
         function doRestoreQuestList() {
@@ -557,12 +566,101 @@
             return deferred;
         }
 
+        function doNotifyOrderPullFailure() {
+            let deferred = $.Deferred();
+
+            pullOrderButton.html(pullOrderButtonFailedHTML);
+            pullOrderButton.addClass("btn-danger");
+            pullOrderButton.removeClass("btn-primary");
+            jobButtons.removeClass("disabled");
+            jobInProgress = false;
+
+            deferred.resolve();
+            return deferred;
+        }
+
+        function doNotifyOrderPushFailure() {
+            let deferred = $.Deferred();
+
+            pushOrderButton.html(pushOrderButtonFailedHTML);
+            pushOrderButton.addClass("btn-danger");
+            pushOrderButton.removeClass("btn-primary");
+            jobButtons.removeClass("disabled");
+            jobInProgress = false;
+
+            deferred.resolve();
+            return deferred;
+        }
+
+        function doFinishPullOrder() {
+            let deferred = $.Deferred();
+
+            pullOrderButton.html(pullOrderButtonReadyHTML);
+            pullOrderButton.addClass("btn-primary");
+            pullOrderButton.removeClass("btn-danger");
+            jobButtons.removeClass("disabled")
+            jobInProgress = false;
+
+            deferred.resolve();
+            return deferred;
+        }
+
+        function doFinishPushOrder() {
+            let deferred = $.Deferred();
+
+            pushOrderButton.html(pushOrderButtonReadyHTML);
+            pushOrderButton.addClass("btn-primary");
+            pushOrderButton.removeClass("btn-danger");
+            jobButtons.removeClass("disabled")
+            jobInProgress = false;
+
+            deferred.resolve();
+            return deferred;
+        }
+
+        function doPushOrderToServer() {
+            let orderData = Cookies.get("questOrder");
+            let order = JSON.parse(orderData);
+            return $.ajax({
+                type: "PUT",
+                url: "{{ url_for("board_api.quests_order") }}",
+                contentType: "application/json",
+                data: orderData,
+            });
+        }
+
+        function doPullOrderFromServer() {
+            return $.get("{{ url_for("board_api.quests_order") }}");
+        }
+
+        function doJSONParse(data) {
+            let deferred = $.Deferred();
+
+            let parsed = JSON.parse(data);
+
+            deferred.resolve(parsed);
+
+            return deferred
+        }
+
         function doPullOrder() {
-            return doInitializeOrderPull();
+            return doInitializeOrderPull()
+                .then(doPullOrderFromServer)
+                .then(doJSONParse)
+                .then(doSaveQuestOrderToCache)
+                .then(doCleanQuestList)
+                .then(doRestoreQuestList)
+                .then(doFinishPullOrder)
+                .fail(doNotifyOrderPullFailure)
+                .fail(doNotifyFailure);
         }
 
         function doPushOrder() {
-            return doInitializeOrderPush();
+            return doInitializeOrderPush()
+                .then(doPushOrderToServer)
+                .then(doFinishPushOrder)
+                .fail(doNotifyOrderPushFailure)
+                .fail(doNotifyFailure);
         }
 
         function doNotifyFailure() {

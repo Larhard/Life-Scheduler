@@ -5,7 +5,7 @@ from flask import Blueprint, request, abort
 from flask_login import login_required, current_user
 
 from life_scheduler.auth.utils import approval_required
-from life_scheduler.board.models import Quest, ImageGraphSource
+from life_scheduler.board.models import Quest, ImageGraphSource, QuestOrder
 from life_scheduler.utils.json import dump_attrs
 
 blueprint = Blueprint("board_api", __name__, url_prefix="/api/board")
@@ -100,5 +100,24 @@ def graphs_set_order():
                     abort(403)
 
                 graph.set_priority(i)
+
+    return ""
+
+
+@blueprint.route("/quests/order/", methods=["GET", "PUT"])
+@login_required
+@approval_required
+def quests_order():
+    if request.method == "GET":
+        if current_user.quest_order:
+            return json.dumps(current_user.quest_order.order)
+        else:
+            return json.dumps([])
+
+    elif request.method == "PUT":
+        QuestOrder.create_or_update({
+            "user": current_user,
+            "order": request.json,
+        })
 
     return ""

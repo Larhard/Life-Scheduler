@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm import backref
 
 from life_scheduler import db
+from life_scheduler.auth.models import User
 from life_scheduler.google.models import Google
 from life_scheduler.trello.models import Trello
 
@@ -274,3 +275,32 @@ class ImageGraphSource(db.Model):
     def remove(cls, source):
         db.session.delete(source)
         db.session.commit()
+
+
+class QuestOrder(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order = db.Column(db.JSON)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user = db.relationship("User", backref=backref("quest_order", uselist=False))
+
+    def __init__(self, order=None, user=None):
+        self.order = order
+        self.user = user
+
+    @classmethod
+    def create_or_update(cls, order_dict):
+        user = order_dict["user"]
+        order = order_dict["order"]
+
+        if user.quest_order is None:
+            quest_order = QuestOrder(
+                user=user,
+                order=order,
+            )
+
+            db.session.add(quest_order)
+            db.session.commit()
+        else:
+            user.quest_order.order = order
+            db.session.commit()

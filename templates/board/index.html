@@ -469,11 +469,19 @@
             });
         }
 
+        Number.prototype.padZero = function(length) {
+            let text = String(this);
+            while (text.length < length) {
+                text = "0" + text;
+            }
+            return text;
+        }
+
         function doUpdateClock() {
             deferred = $.Deferred();
 
             let now = new Date();
-            let text = `${now.getHours()}:${now.getMinutes()}`;
+            let text = `${now.getHours().padZero(2)}:${now.getMinutes().padZero(2)}`;
             if (clockField.text() !== text) {
                 clockField.text(text);
             }

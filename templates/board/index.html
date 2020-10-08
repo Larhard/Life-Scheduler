@@ -6,28 +6,30 @@
 {% endblock %}
 
 {% block content %}
-    <nav id="navbar" class="navbar sticky-top bg-dark" role="navigation">
-        <div>
-            <img data-toggle="collapse" data-target="#navbarButtons" src="{{ url_for("static", filename="images/icon.png") }}" style="height: 2.5rem; cursor: pointer;" alt="Life Scheduler"/>
-        </div>
-        <div class="text-white text-right text-monospace">
-            <span id="battery-level"></span>
-            <span id="battery-charging-icon"></span>
-            <span id="clock"></span>
-        </div>
-    </nav>
-
-    <div id="navbarButtons" class="collapse bg-dark container-fluid">
-        <div class="row">
-            <div class="col-sm-3 col-12 p-1">
-                <button id="pull-button" class="btn btn-primary btn-block job-button" type="button">
-                    Pull
-                </button>
+    <div class="sticky-top">
+        <nav id="navbar" class="navbar bg-dark" role="navigation">
+            <div>
+                <img data-toggle="collapse" data-target="#navbarButtons" src="{{ url_for("static", filename="images/icon.png") }}" style="height: 2.5rem; cursor: pointer;" alt="Life Scheduler"/>
             </div>
-            <div class="col-sm-3 col-12 p-1">
-                <button id="archivize-button" class="btn btn-primary btn-block job-button" type="button">
-                    Archivize
-                </button>
+            <div class="text-white text-right text-monospace">
+                <span id="battery-level"></span>
+                <span id="battery-charging-icon"></span>
+                <span id="clock"></span>
+            </div>
+        </nav>
+
+        <div id="navbarButtons" class="collapse bg-dark container-fluid">
+            <div class="row">
+                <div class="col-sm-3 col-12 p-1">
+                    <button id="pull-button" class="btn btn-primary btn-block job-button" type="button">
+                        Pull
+                    </button>
+                </div>
+                <div class="col-sm-3 col-12 p-1">
+                    <button id="archivize-button" class="btn btn-primary btn-block job-button" type="button">
+                        Archivize
+                    </button>
+                </div>
             </div>
         </div>
     </div>

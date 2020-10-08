@@ -272,7 +272,7 @@
         }
 
         function formatQuestItem(data) {
-            let formatted = $(`<li id="${getQuestIdentifier(data.id)}" class="list-group-item quest-item container-fluid" style="margin-bottom: 0px;">${formatQuestBody(data)}</li>`);
+            let formatted = $(`<li id="${getQuestIdentifier(data.id)}" class="list-group-item quest-item container-fluid">${formatQuestBody(data)}</li>`);
             setQuestItemDoneFlag(formatted, data.is_done);
             return formatted;
         }

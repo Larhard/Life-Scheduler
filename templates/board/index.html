@@ -65,6 +65,7 @@
         const autoPullInterval = 10 * 60 * 1000;
         const questSoonUpdateInterval = 30 * 1000;
         const questSoonThreshold = 60 * 60 * 1000;
+        const softPullInterval = 15 * 1000;
 
         const archivizeButton = $("#archivize-button");
         const archivizeButtonReadyHTML = archivizeButton.html();
@@ -86,6 +87,8 @@
         let jobInProgress = false;
         let questOrder = [];
 
+        let lastPullDate = null;
+
         const questList = $("#quest-list");
 
         function doPull() {
@@ -102,6 +105,16 @@
                 .fail(doNotifyFailure);
         }
 
+        function doSoftPull() {
+            let date = new Date();
+            date.setMilliseconds(date.getMilliseconds() - softPullInterval);
+            if (lastPullDate < date) {
+                return doPull();
+            } else {
+                return doNothing();
+            }
+        }
+
         function doInitializeQuestPull() {
             let deferred = $.Deferred();
 
@@ -111,6 +124,8 @@
                 jobInProgress = true;
                 jobButtons.addClass("disabled")
                 pullButton.html(pullButtonInProgressHTML);
+
+                lastPullDate = new Date();
 
                 deferred.resolve();
             }
@@ -640,6 +655,7 @@
             setInterval(doUpdateClock, 1000);
             setInterval(doUpdateQuestSoon, questSoonUpdateInterval);
             initRefreshers();
+            window.onfocus = doSoftPull;
         });
     </script>
 {% endblock %}

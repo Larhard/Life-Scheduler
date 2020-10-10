@@ -1,3 +1,6 @@
+from urllib.parse import quote
+
+
 class GoogleAPISession:
     BASE_URL = "https://www.googleapis.com"
 
@@ -28,10 +31,10 @@ class GoogleAPISession:
         return self.iter_get_pages("/calendar/v3/users/me/calendarList", **kwargs)
 
     def get_calendar(self, calendar_id, **kwargs):
-        return self.get(f"/calendar/v3/users/me/calendarList/{calendar_id}", **kwargs)
+        return self.get(f"/calendar/v3/users/me/calendarList/{quote(calendar_id)}", **kwargs)
 
     def iter_calendar_events(self, calendar_id, **kwargs):
-        return self.iter_get_pages(f"/calendar/v3/calendars/{calendar_id}/events", **kwargs)
+        return self.iter_get_pages(f"/calendar/v3/calendars/{quote(calendar_id)}/events", **kwargs)
 
     def get_calendar_colors(self, **kwargs):
         return self.get("/calendar/v3/colors", **kwargs)

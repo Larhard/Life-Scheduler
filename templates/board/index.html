@@ -303,17 +303,25 @@
             setQuestItemDoneFlag(quest, data.is_done);
         }
 
-        function createQuest(data) {
+        function prependQuest(data) {
+            questList.prepend(formatQuestItem(data));
+        }
+
+        function appendQuest(data) {
             questList.append(formatQuestItem(data));
         }
 
-        function createOrUpdateQuest(data) {
+        function createOrUpdateQuest(data, prepend=false) {
             let identifier = getQuestIdentifier(data.id);
             let quest = questList.find(`[id="${identifier}"]`);
             if (quest.length > 0) {
                 updateQuest(quest, data);
             } else {
-                createQuest(data);
+                if (prepend) {
+                    prependQuest(data);
+                } else {
+                    appendQuest(data);
+                }
             }
         }
 
@@ -328,7 +336,7 @@
         }
 
         function updateQuestList(data) {
-            data.forEach(questData => createOrUpdateQuest(questData));
+            data.forEach(questData => createOrUpdateQuest(questData, true));
             removeOutdatedQuests(data);
         }
 

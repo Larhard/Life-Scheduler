@@ -53,7 +53,8 @@ class GoogleQuestSourceManager(QuestSourceManager):
 
             start_data = event.get("start")
             if start_data:
-                start_timezone = start_data.get("timeZone")
+                # start_timezone = start_data.get("timeZone")  # TODO clarify what the timezone means
+                start_timezone = None
                 if "date" in start_data:
                     quest_dict["start_date"] = to_utc(start_data["date"], start_timezone)
 
@@ -62,7 +63,8 @@ class GoogleQuestSourceManager(QuestSourceManager):
 
             end_data = event.get("end")
             if end_data:
-                end_timezone = end_data.get("timeZone")
+                # end_timezone = end_data.get("timeZone")  # TODO clarify what the timezone means
+                end_timezone = None
 
                 if "date" in end_data:
                     quest_dict["end_date"] = to_utc(end_data["date"], end_timezone)

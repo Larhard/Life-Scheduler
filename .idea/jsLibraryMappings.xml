@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="JavaScriptLibraryMappings">
-    <file url="file://$PROJECT_DIR$" libraries="{bootstrap, jquery-3.4.1.slim, jquery-3.5.1, jquery-ui, jquery.ui.touch-punch, jqueryui-touch-punch, js-cookie, popper.js}" />
+    <file url="file://$PROJECT_DIR$" libraries="{bootstrap, bootstrap-toggle, jquery-3.4.1.slim, jquery-3.5.1, jquery-ui, jquery.ui.touch-punch, jqueryui-touch-punch, js-cookie, popper.js}" />
     <file url="PROJECT" libraries="{@types/jquery}" />
   </component>
 </project>

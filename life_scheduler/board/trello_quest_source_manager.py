@@ -52,6 +52,9 @@ class TrelloQuestSourceManager(QuestSourceManager):
         quest.is_done = value
         db.session.commit()
 
+    def get_quest_source_url(self, quest):
+        return f"https://trello.com/c/{quest.external_id}"
+
     def __str__(self):
         return f"{self.board_display_name}/{self.list_display_name}@{self.source.get_backend()}"
 

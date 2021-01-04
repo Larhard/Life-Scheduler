@@ -280,13 +280,23 @@
             return labels;
         }
 
+        function formatQuestBodySourceUrl(data) {
+            if (data.source_url === null) {
+                return ""
+            }
+
+            let output = `<span class="quest-item-button"><a href="${data.source_url}" target="_blank">🔗</a></span>`
+            return output
+        }
+
         function formatQuestBody(data) {
             let name = formatQuestBodyName(data);
             let date = formatQuestBodyDateField(data);
             let sourceLabels = formatQuestBodySourceLabels(data);
             let questLabels = formatQuestBodyQuestLabels(data);
+            let sourceUrl = formatQuestBodySourceUrl(data);
 
-            return `<div class="row"><div class="col-sm-12">${date} ${name} ${sourceLabels} ${questLabels}</div></div>`;
+            return `<div class="row"><div class="col-sm-12">${date} ${name} ${sourceUrl} ${sourceLabels} ${questLabels}</div></div>`;
         }
 
         function formatQuestItem(data) {
@@ -615,6 +625,15 @@
             return deferred;
         }
 
+        function doStopPropagation(e) {
+            let deferred = $.Deferred();
+
+            e.stopPropagation();
+
+            deferred.resolve(e);
+            return deferred;
+        }
+
         function doUpdateQuestSoon(data) {
             let deferred = $.Deferred();
 
@@ -656,6 +675,7 @@
         pullButton.on("click", doPull);
         archivizeButton.on("click", doArchivize);
         $(document).on("click", ".quest-item", doToggleDone);
+        $(document).on("click", ".quest-item-button", doStopPropagation);
 
         questList.sortable({
             update: doStoreQuestOrder

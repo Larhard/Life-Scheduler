@@ -104,6 +104,11 @@ class Quest(db.Model):
             return datetime.combine(self.end_date, self.end_time)
         return self.end_date
 
+    @property
+    def source_url(self):
+        manager = self.source.get_manager()
+        return manager.get_quest_source_url(self)
+
     @start_datetime.setter
     def start_datetime(self, value):
         if value is None:

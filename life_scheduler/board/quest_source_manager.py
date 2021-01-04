@@ -16,3 +16,6 @@ class QuestSourceManager:
 
     def set_quest_done(self, quest, value):
         raise NotImplementedError()
+
+    def get_quest_source_url(self, quest):
+        return None

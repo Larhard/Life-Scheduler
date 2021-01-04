@@ -34,6 +34,8 @@ class Quest(db.Model):
     is_archived = db.Column(db.Boolean, default=False, index=True)
     is_done = db.Column(db.Boolean, default=False)
 
+    extra = db.Column(db.JSON)
+
     def __init__(
             self,
             name=None,

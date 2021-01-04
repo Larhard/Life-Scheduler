@@ -49,6 +49,9 @@ class GoogleQuestSourceManager(QuestSourceManager):
                 "source": self.source,
                 "external_id": event["id"],
                 "labels": list(self.process_labels(event, event_colors)),
+                "extra": {
+                    "html_link": event["htmlLink"],
+                },
             }
 
             start_data = event.get("start")
@@ -81,6 +84,10 @@ class GoogleQuestSourceManager(QuestSourceManager):
     def set_quest_done(self, quest, value):
         quest.is_done = value
         db.session.commit()
+
+    def get_quest_source_url(self, quest):
+        if quest.extra:
+            return quest.extra.get("html_link")
 
     def __str__(self):
         return f"{self.calendar_display_name}@{self.source.get_backend()}"

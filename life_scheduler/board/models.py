@@ -53,6 +53,7 @@ class Quest(db.Model):
             labels=None,
             is_archived=False,
             is_done=False,
+            extra=None,
     ):
         self.name = name
         self.description = description
@@ -80,6 +81,8 @@ class Quest(db.Model):
 
         self.is_archived = is_archived
         self.is_done = is_done
+
+        self.extra = extra
 
     def update(self, quest_dict):
         for key in quest_dict:

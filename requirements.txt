@@ -1,4 +1,5 @@
 Flask
+Flask-FeatureFlags
 Flask-Login
 Flask-Migrate
 Flask-SQLAlchemy

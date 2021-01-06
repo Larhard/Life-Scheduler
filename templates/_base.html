@@ -31,6 +31,42 @@
     {%- endblock -%}
 </head>
 <body class="bg-light">
+{%- block navbar -%}
+    <div class="sticky-top">
+        <nav id="navbar" class="navbar bg-dark" role="navigation">
+            <div>
+                <img data-toggle="collapse" data-target="#navbarButtons" src="{{ url_for("static", filename="images/icon.png") }}" style="height: 2.5rem; cursor: pointer;" alt="Life Scheduler"/>
+            </div>
+            <div class="text-white text-right text-monospace">
+                <span id="battery-level"></span>
+                <span id="battery-charging-icon"></span>
+                <span id="clock"></span>
+            </div>
+        </nav>
+
+        <div id="navbarButtons" class="collapse {% if "FEATURE_NAVIGATION_VISIBLE_BY_DEFAULT" is active_feature %}show{% endif %} bg-dark container-fluid">
+            {% block navbar_buttons %}
+                <div class="row">
+                    <div class="col-sm-3 col-12 p-1">
+                        <a class="btn btn-primary btn-block" role="button" href="{{ url_for("board.index") }}">
+                            Board
+                        </a>
+                    </div>
+                    <div class="col-sm-3 col-12 p-1">
+                        <a class="btn btn-primary btn-block" role="button" href="{{ url_for("board.settings") }}">
+                            Settings
+                        </a>
+                    </div>
+                    <div class="col-sm-3 col-12 p-1">
+                        <a class="btn btn-primary btn-block" role="button" href="{{ url_for("scheduler.index") }}">
+                            Scheduler
+                        </a>
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
+    </div>
+{%- endblock -%}
 {%- block content -%}{%- endblock -%}
 {%- block scripts -%}
 {%- endblock -%}

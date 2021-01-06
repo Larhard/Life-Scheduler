@@ -1,6 +1,8 @@
 import os
+from distutils.util import strtobool
 
 import life_scheduler.utils.git
+from constants import *
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -24,3 +26,10 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     DEBUG_FAST_LOGIN = os.getenv("DEBUG_FAST_LOGIN")
+
+    FEATURE_FLAGS = {
+        FEATURE_SCHEDULER: strtobool(os.getenv(FEATURE_SCHEDULER, "False")),
+        FEATURE_NAVIGATION_ON_BOARD: strtobool(os.getenv(FEATURE_NAVIGATION_ON_BOARD, "False")),
+        FEATURE_NAVIGATION_VISIBLE_BY_DEFAULT: strtobool(os.getenv(FEATURE_NAVIGATION_VISIBLE_BY_DEFAULT, "False")),
+    }
+

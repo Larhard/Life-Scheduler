@@ -2,6 +2,8 @@ from life_scheduler.board.models import QuestSource
 
 
 class QuestSourceManager:
+    supports_scheduler = False
+
     def __init__(self, source: QuestSource, **kwargs):
         self.source = source
 

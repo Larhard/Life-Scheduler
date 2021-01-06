@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask
+from flask_featureflags import FeatureFlag
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -11,11 +12,13 @@ import config
 db = SQLAlchemy()
 db_migrate = Migrate()
 login_manager = LoginManager()
+feature_flag = FeatureFlag()
 
 
 def create_app(config_object=config.Config):
     import life_scheduler.auth.models
     import life_scheduler.board.models
+    import life_scheduler.scheduler.models
     import life_scheduler.trello.models
 
     import life_scheduler.routes
@@ -23,6 +26,7 @@ def create_app(config_object=config.Config):
     import life_scheduler.board.routes
     import life_scheduler.board.api_routes
     import life_scheduler.google.routes
+    import life_scheduler.scheduler.routes
     import life_scheduler.trello.routes
 
     root_folder = os.path.dirname(os.path.dirname(__file__))
@@ -38,12 +42,14 @@ def create_app(config_object=config.Config):
     db.init_app(app)
     db_migrate.init_app(app, db)
     login_manager.init_app(app)
+    feature_flag.init_app(app)
 
     app.register_blueprint(life_scheduler.routes.blueprint)
     app.register_blueprint(life_scheduler.auth.routes.blueprint)
     app.register_blueprint(life_scheduler.board.api_routes.blueprint)
     app.register_blueprint(life_scheduler.board.routes.blueprint)
     app.register_blueprint(life_scheduler.google.routes.blueprint)
+    app.register_blueprint(life_scheduler.scheduler.routes.blueprint)
     app.register_blueprint(life_scheduler.trello.routes.blueprint)
 
     app.wsgi_app = SassMiddleware(

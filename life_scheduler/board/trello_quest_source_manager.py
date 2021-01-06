@@ -7,6 +7,8 @@ from life_scheduler.trello.models import Trello
 
 
 class TrelloQuestSourceManager(QuestSourceManager):
+    supports_scheduler = True
+
     board_id = None
     list_id = None
     board_display_name = None

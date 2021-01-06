@@ -213,6 +213,11 @@ class QuestSource(db.Model):
         else:
             raise ValueError(f"Unknown backend type: {self.backend_type}")
 
+    @property
+    def supports_scheduler(self):
+        manager = self.get_manager()
+        return manager.supports_scheduler
+
     def set_label_name(self, value):
         self.label_name = value
         db.session.commit()

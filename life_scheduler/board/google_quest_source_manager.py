@@ -5,7 +5,7 @@ from life_scheduler import db
 from life_scheduler.board.models import Quest
 from life_scheduler.board.quest_source_manager import QuestSourceManager
 from life_scheduler.google.models import Google
-from life_scheduler.time import to_utc
+from life_scheduler.time import to_utc, to_utc_date
 
 
 class GoogleQuestSourceManager(QuestSourceManager):
@@ -61,7 +61,7 @@ class GoogleQuestSourceManager(QuestSourceManager):
                 # start_timezone = start_data.get("timeZone")  # TODO clarify what the timezone means
                 start_timezone = None
                 if "date" in start_data:
-                    quest_dict["start_date"] = to_utc(start_data["date"], start_timezone)
+                    quest_dict["start_date"] = to_utc_date(start_data["date"], start_timezone)
 
                 if "dateTime" in start_data:
                     quest_dict["start_datetime"] = to_utc(start_data["dateTime"], start_timezone)
@@ -72,7 +72,7 @@ class GoogleQuestSourceManager(QuestSourceManager):
                 end_timezone = None
 
                 if "date" in end_data:
-                    quest_dict["end_date"] = to_utc(end_data["date"], end_timezone)
+                    quest_dict["end_date"] = to_utc_date(end_data["date"], end_timezone)
 
                 if "dateTime" in end_data:
                     quest_dict["end_datetime"] = to_utc(end_data["dateTime"], end_timezone)

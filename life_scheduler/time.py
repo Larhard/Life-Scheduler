@@ -41,6 +41,12 @@ def to_utc(dt, tz=None):
         return dt
 
 
+def to_utc_date(dt, tz=None):
+    if dt is not None:
+        dt = to_utc(dt)
+        return dt.date()
+
+
 def to_local(dt, tz=None, source_tz=None):
     if dt is not None:
         dt = sanitize_datetime(dt, source_tz)

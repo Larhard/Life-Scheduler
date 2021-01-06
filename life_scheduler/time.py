@@ -36,7 +36,9 @@ def get_timezone(tz=None):
 def to_utc(dt, tz=None):
     if dt is not None:
         dt = sanitize_datetime(dt, tz)
-        return dt.astimezone(TZ_UTC)
+        dt = dt.astimezone(TZ_UTC)
+        dt = dt.replace(tzinfo=None)
+        return dt
 
 
 def to_local(dt, tz=None, source_tz=None):

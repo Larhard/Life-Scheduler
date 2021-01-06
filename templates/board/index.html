@@ -395,6 +395,7 @@
             return doInitializeArchivization()
                 .then(doUpdateServerArchivizationStatus)
                 .then(doUpdateQuestList)
+                .then(doStoreQuestOrder)
                 .then(doFinishArchivization)
                 .fail(doNotifyArchivizationFailure)
                 .fail(doNotifyFailure);

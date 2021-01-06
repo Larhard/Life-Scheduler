@@ -3,6 +3,7 @@ import dateutil.parser
 from life_scheduler import db
 from life_scheduler.board.models import Quest
 from life_scheduler.board.quest_source_manager import QuestSourceManager
+from life_scheduler.time import to_utc
 from life_scheduler.trello.models import Trello
 
 
@@ -22,7 +23,7 @@ class TrelloQuestSourceManager(QuestSourceManager):
         new_quests = [
             {
                 "name": quest["name"],
-                "deadline": dateutil.parser.parse(quest["due"]) if quest["due"] else None,
+                "deadline": to_utc(quest["due"]) if quest["due"] else None,
                 "user": backend.user,
                 "source": self.source,
                 "external_id": quest["id"],
@@ -37,7 +38,7 @@ class TrelloQuestSourceManager(QuestSourceManager):
         for quest in new_quests:
             Quest.create_or_update(quest)
 
-        for quest in Quest.get_by_source(self.source):
+        for quest in Quest.get_active_by_source(self.source):
             if quest.external_id not in new_quests_external_ids:
                 quest.is_archived = True
                 db.session.commit()

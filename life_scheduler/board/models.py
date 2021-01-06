@@ -85,9 +85,16 @@ class Quest(db.Model):
         self.extra = extra
 
     def update(self, quest_dict):
+        diff = {}
         for key in quest_dict:
-            setattr(self, key, quest_dict[key])
+            old_value = getattr(self, key)
+            if old_value != quest_dict[key]:
+                diff[key] = old_value
+                setattr(self, key, quest_dict[key])
+
         db.session.commit()
+
+        return diff
 
     def set_archived(self, value):
         manager = self.source.get_manager()
@@ -139,16 +146,32 @@ class Quest(db.Model):
 
     @classmethod
     def create_or_update(cls, quest_dict):
+        result = {
+            "update": False,
+            "invalidated": False,
+            "diff": None,
+            "quest": None,
+        }
+
         source = quest_dict["source"]
         if not source.validate_quest_dict(quest_dict):
+            result["invalidated"] = True
+
             quest_dict["is_archived"] = True
 
         old_quest = cls.get_by_external_id(quest_dict["external_id"], quest_dict["source"])
         if not old_quest:
             quest = Quest(**quest_dict)
             cls.create(quest)
+            result["quest"] = quest
         else:
-            old_quest.update(quest_dict)
+            diff = old_quest.update(quest_dict)
+
+            result["update"] = True
+            result["diff"] = diff
+            result["quest"] = old_quest
+
+        return result
 
     @classmethod
     def get_by_external_id(cls, external_id, source):
@@ -157,6 +180,10 @@ class Quest(db.Model):
     @classmethod
     def get_by_source(cls, source):
         return cls.query.filter_by(source=source).all()
+
+    @classmethod
+    def get_active_by_source(cls, source):
+        return cls.query.filter_by(source=source).filter_by(is_archived=False).all()
 
     @classmethod
     def get_by_id(cls, quest_id):

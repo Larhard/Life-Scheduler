@@ -36,6 +36,8 @@ class GoogleQuestSourceManager(QuestSourceManager):
         colors = session.get_calendar_colors()
         event_colors = colors["event"]
 
+        quest_dicts = {}
+
         for event in session.iter_calendar_events(
                 calendar_id=self.calendar_id,
                 timeMin=formatted_time_min,
@@ -75,7 +77,28 @@ class GoogleQuestSourceManager(QuestSourceManager):
                 if "dateTime" in end_data:
                     quest_dict["end_datetime"] = to_utc(end_data["dateTime"], end_timezone)
 
-            Quest.create_or_update(quest_dict)
+            quest_dicts[quest_dict["external_id"]] = quest_dict
+
+        for quest in Quest.get_active_by_source(self.source):
+            if quest.external_id not in quest_dicts:
+                quest.is_archived = True
+                db.session.commit()
+
+        for quest_dict in quest_dicts.values():
+            result = Quest.create_or_update(quest_dict)
+
+            if result["update"] and not result["invalidated"] and result["quest"].is_archived:
+                for key in result["diff"]:
+                    if key in [
+                        "start_date",
+                        "start_datetime",
+                        "end_date",
+                        "end_datetime"
+                    ]:
+                        result["quest"].is_archived = False
+                        result["quest"].is_done = False
+
+                db.session.commit()
 
     def set_quest_archived(self, quest, value):
         quest.is_archived = True

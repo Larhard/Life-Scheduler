@@ -24,6 +24,12 @@ class Trello(db.Model):
         client_key = current_app.config["TRELLO_API_KEY"]
         client_secret = current_app.config["TRELLO_API_SECRET"]
 
+        if client_key is None:
+            raise ValueError("Unable to create Trello session: TRELLO_API_KEY is None")
+
+        if client_secret is None:
+            raise ValueError("Unable to create Trello session: TRELLO_API_SECRET is None")
+
         return OAuth1Session(
             client_key=client_key,
             client_secret=client_secret,
@@ -80,6 +86,12 @@ class TrelloTemporaryToken(db.Model):
     def get_raw_session(self, **kwargs):
         client_key = current_app.config["TRELLO_API_KEY"]
         client_secret = current_app.config["TRELLO_API_SECRET"]
+
+        if client_key is None:
+            raise ValueError("Unable to create Trello temporary session: TRELLO_API_KEY is None")
+
+        if client_secret is None:
+            raise ValueError("Unable to create Trello temporary session: TRELLO_API_SECRET is None")
 
         return OAuth1Session(
             client_key=client_key,

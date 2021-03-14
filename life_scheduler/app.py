@@ -25,6 +25,7 @@ def create_app(config_object=config.Config):
     import life_scheduler.auth.routes
     import life_scheduler.board.routes
     import life_scheduler.board.api_routes
+    import life_scheduler.board.cli_routes
     import life_scheduler.google.routes
     import life_scheduler.scheduler.routes
     import life_scheduler.trello.routes

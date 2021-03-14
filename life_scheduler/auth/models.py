@@ -65,6 +65,12 @@ class User(UserMixin, db.Model):
 
         return result
 
+    @classmethod
+    def get_all(cls):
+        result = cls.query.all()
+
+        return result
+
 
 @login_manager.user_loader
 def load_user(user_id):

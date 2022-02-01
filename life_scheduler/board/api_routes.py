@@ -1,7 +1,7 @@
 import json
 from functools import partial
 
-from flask import Blueprint, request, abort
+from flask import Blueprint, request, abort, current_app
 from flask_login import login_required, current_user
 
 from life_scheduler.auth.utils import approval_required
@@ -41,6 +41,7 @@ def quests_today():
 @approval_required
 def quests_pull():
     for source in current_user.quest_sources:
+        current_app.logger.info(f"Pulling quest source: {source}")
         source.get_manager().pull()
 
     return ""

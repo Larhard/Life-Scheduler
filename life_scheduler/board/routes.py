@@ -141,6 +141,8 @@ def add_google_quest_source(google_id):
     session: GoogleAPISession = google.get_session()
     form = AddGoogleQuestSourceForm()
 
+    form.calendar.choices = [(c["id"], c["summary"]) for c in session.iter_calendars()]
+
     if form.validate_on_submit():
         calendar_id = form.calendar.data
 
@@ -155,7 +157,5 @@ def add_google_quest_source(google_id):
         )
 
         return redirect(url_for("board.settings"))
-
-    form.calendar.choices = [(c["id"], c["summary"]) for c in session.iter_calendars()]
 
     return render_template("board/add_google_quest_source.html", form=form, google=google)

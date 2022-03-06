@@ -14,7 +14,7 @@ class AddImageGraphSourceForm(FlaskForm):
 
 
 class AddGoogleQuestSourceForm(FlaskForm):
-    calendar = SelectField(validate_choice=False)
+    calendar = SelectField()
     submit = SubmitField("Create")
 
 

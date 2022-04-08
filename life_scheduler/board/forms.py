@@ -5,6 +5,7 @@ from wtforms import StringField, SubmitField, IntegerField, SelectField, TextAre
 class AddTrelloQuestSourceForm(FlaskForm):
     board = StringField()
     list = StringField()
+    queue_list = StringField()
     submit = SubmitField("Create")
 
 

@@ -16,8 +16,18 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="input_list">{{ form.board.label }}</label>
+                    <label for="input_list">{{ form.list.label }}</label>
                     <select class="form-control" id="input_list" name="{{ form.list.name }}">
+                        {% for board in boards %}
+                        {% for list in session.get_lists(board["id"], filter="open") %}
+                        <option value="{{ list["id"] }}" board="{{ board["id"] }}">{{ list["name"] }}</option>
+                        {% endfor %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="input_list">{{ form.queue_list.label }}</label>
+                    <select class="form-control" id="input_queue_list" name="{{ form.queue_list.name }}">
                         {% for board in boards %}
                             {% for list in session.get_lists(board["id"], filter="open") %}
                                 <option value="{{ list["id"] }}" board="{{ board["id"] }}">{{ list["name"] }}</option>
@@ -36,11 +46,14 @@
     <script>
         const $inputBoard = $("#input_board");
         const $inputList = $("#input_list");
+        const $inputQueueList = $("#input_queue_list");
 
         const $inputListOptions = $inputList.find("option");
+        const $inputQueueListOptions = $inputQueueList.find("option");
 
         $inputBoard.on("change", function () {
             $inputList.html($inputListOptions.filter("[board='" + this.value + "']")).trigger("change");
+            $inputQueueList.html($inputQueueListOptions.filter("[board='" + this.value + "']")).trigger("change");
         }).trigger("change");
     </script>
 {% endblock %}

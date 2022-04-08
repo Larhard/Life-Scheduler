@@ -3,9 +3,11 @@ from functools import partial
 
 from flask import Blueprint, request, abort, current_app
 from flask_login import login_required, current_user
+from flask_featureflags import is_active
 
 from life_scheduler.auth.utils import approval_required
 from life_scheduler.board.models import Quest, ImageGraphSource, QuestOrder
+from life_scheduler.time import parse_date
 from life_scheduler.utils.json import dump_attrs
 
 blueprint = Blueprint("board_api", __name__, url_prefix="/api/board")
@@ -30,6 +32,9 @@ def quests_today():
         "labels",
         "source_url",
     ]
+
+    if is_active("FEATURE_POSTPONE"):
+        attrs.append("supports_postpone")
 
     dumped_quests = list(map(partial(dump_attrs, attrs), quests))
 
@@ -59,6 +64,10 @@ def quests(quest_id):
         if "is_done" in request.form:
             is_done = bool(json.loads(request.form["is_done"]))
             quest.set_done(is_done)
+        if is_active("FEATURE_POSTPONE"):
+            if "postponed_date" in request.form:
+                postponed_date = parse_date(request.form["postponed_date"])
+                quest.set_postponed_date(postponed_date)
 
     return ""
 

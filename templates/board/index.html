@@ -206,6 +206,11 @@
             return $("<div>").text(str).html();
         }
 
+        function formatDate(date) {
+            output = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+            return output;
+        }
+
         function formatQuestBodyTime(time) {
             return time.replace(/(.*:.*):.*/, "$1");
         }
@@ -257,7 +262,8 @@
         }
 
         function formatQuestBodyName(data) {
-            return `${htmlEscape(data.name)}`;
+            output = `<span class="quest-name">${htmlEscape(data.name)}</span>`;
+            return output;
         }
 
         function formatQuestBodySourceLabels(data) {
@@ -293,14 +299,27 @@
             return output
         }
 
+        function formatPostponeButton(data) {
+            let output = ``
+
+            {% if "FEATURE_POSTPONE" is active_feature %}
+                if (data.supports_postpone) {
+                    output = `<span class="quest-item-button"><a class="quest-item-postpone-button">⏰</a></span>`
+                }
+            {% endif %}
+
+            return output
+        }
+
         function formatQuestBody(data) {
             let name = formatQuestBodyName(data);
             let date = formatQuestBodyDateField(data);
             let sourceLabels = formatQuestBodySourceLabels(data);
             let questLabels = formatQuestBodyQuestLabels(data);
             let sourceUrl = formatQuestBodySourceUrl(data);
+            let postponeButton = formatPostponeButton(data);
 
-            return `<div class="row"><div class="col-sm-12">${date} ${name} ${sourceUrl} ${sourceLabels} ${questLabels}</div></div>`;
+            return `<div class="row"><div class="col-sm-12">${date} ${name} ${sourceUrl} ${sourceLabels} ${postponeButton} ${questLabels}</div></div>`;
         }
 
         function formatQuestItem(data) {
@@ -461,8 +480,9 @@
         function doToggleDoneClass(questItem) {
             let deferred = $.Deferred();
 
-            const targetDoneFlag = !questItem.hasClass("quest-done");
-            setQuestItemDoneFlag(questItem, targetDoneFlag);
+            const doneFlag = questItem.hasClass("quest-done");
+
+            setQuestItemDoneFlag(questItem, !doneFlag);
 
             deferred.resolve(questItem);
             return deferred;
@@ -482,6 +502,44 @@
             const url = "{{ url_for("board_api.quests", quest_id="QUEST_ID") }}".replace("QUEST_ID", questId);
 
             return $.post(url, {is_done: is_done});
+        }
+
+        function doQuestPostpone() {
+            let questItem = $(this).parent().parent().parent().parent();
+
+            return doQuestCheckDone(questItem)
+                .then(doQuestUpdateServerPostponedStatus)
+                .then(doPull)
+                .fail(doNotifyFailure);
+        }
+
+        function doQuestCheckDone(questItem) {
+            let deferred = $.Deferred();
+
+            const doneFlag = questItem.hasClass("quest-done");
+
+            if (doneFlag) {
+                deferred.reject({
+                    isCritical: false,
+                    message: `Quest is done`,
+                });
+                return deferred;
+            }
+
+            deferred.resolve(questItem);
+            return deferred;
+        }
+
+        function doQuestUpdateServerPostponedStatus(questItem) {
+            const questId = parseQuestIdentifier(questItem.attr("id"));
+            const url = "{{ url_for("board_api.quests", quest_id="QUEST_ID") }}".replace("QUEST_ID", questId);
+
+            let postponedDate = new Date();
+            postponedDate.setDate(postponedDate.getDate() + 1);
+
+            let postponedDateString = formatDate(postponedDate)
+
+            return $.post(url, {postponed_date: postponedDateString});
         }
 
         function getBatteryChargingIcon(charging) {
@@ -610,14 +668,28 @@
                 .fail(doNotifyFailure);
         }
 
-        function doNotifyFailure() {
+        function doNotifyFailure(data) {
             let deferred = $.Deferred();
 
-            navbar.addClass("bg-danger");
-            navbar.removeClass("bg-dark");
+            let isCritical = true;
+            let message = undefined;
 
-            if (autoRefresh) {
-                window.location.reload();
+            if (data !== undefined) {
+                isCritical = (data.isCritical !== undefined) ? data.isCritical : isCritical;
+                message = (data.message !== undefined) ? data.message : message;
+            }
+
+            if (message !== undefined) {
+                console.log(message)
+            }
+
+            if (isCritical) {
+                navbar.addClass("bg-danger");
+                navbar.removeClass("bg-dark");
+
+                if (autoRefresh) {
+                    window.location.reload();
+                }
             }
 
             deferred.resolve();
@@ -811,6 +883,7 @@
         autoRefreshToggle.on("change", doUpdateAutoRefresh);
         $(document).on("click", ".quest-item", doToggleDone);
         $(document).on("click", ".quest-item-button", doStopPropagation);
+        $(document).on("click", ".quest-item-postpone-button", doQuestPostpone);
 
         questList.sortable({
             update: doStoreQuestOrder

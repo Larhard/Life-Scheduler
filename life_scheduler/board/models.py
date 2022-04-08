@@ -104,6 +104,10 @@ class Quest(db.Model):
         manager = self.source.get_manager()
         manager.set_quest_done(self, value)
 
+    def set_postponed_date(self, value):
+        manager = self.source.get_manager()
+        manager.set_quest_postponed_date(self, value)
+
     @property
     def start_datetime(self):
         if self.start_time is not None:
@@ -120,6 +124,11 @@ class Quest(db.Model):
     def source_url(self):
         manager = self.source.get_manager()
         return manager.get_quest_source_url(self)
+
+    @property
+    def supports_postpone(self):
+        manager = self.source.get_manager()
+        return manager.supports_postpone
 
     @start_datetime.setter
     def start_datetime(self, value):
@@ -244,6 +253,11 @@ class QuestSource(db.Model):
     def supports_scheduler(self):
         manager = self.get_manager()
         return manager.supports_scheduler
+
+    @property
+    def supports_postpone(self):
+        manager = self.get_manager()
+        return manager.supports_postpone
 
     def set_label_name(self, value):
         self.label_name = value

@@ -1,3 +1,5 @@
+import datetime
+
 import dateutil.parser
 
 from life_scheduler import db
@@ -9,11 +11,14 @@ from life_scheduler.trello.models import Trello
 
 class TrelloQuestSourceManager(QuestSourceManager):
     supports_scheduler = True
+    supports_postpone = True
 
     board_id = None
     list_id = None
+    queue_list_id = None
     board_display_name = None
     list_display_name = None
+    queue_list_display_name = None
 
     def pull(self):
         backend: Trello = self.source.get_backend()
@@ -55,11 +60,23 @@ class TrelloQuestSourceManager(QuestSourceManager):
         quest.is_done = value
         db.session.commit()
 
+    def set_quest_postponed_date(self, quest, value):
+        assert(isinstance(value, datetime.date))
+
+        backend: Trello = self.source.get_backend()
+        session = backend.get_session()
+
+        session.update_card(
+            quest.external_id,
+            due=value.isoformat(),
+            idList=self.queue_list_id,
+        )
+
     def get_quest_source_url(self, quest):
         return f"https://trello.com/c/{quest.external_id}"
 
     def __str__(self):
-        return f"{self.board_display_name}/{self.list_display_name}@{self.source.get_backend()}"
+        return f"{self.board_display_name}/{self.list_display_name}:{self.queue_list_display_name}@{self.source.get_backend()}"
 
     def process_labels(self, labels):
         result = {

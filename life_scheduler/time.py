@@ -1,3 +1,5 @@
+import datetime
+
 import dateutil.parser
 
 from dateutil.tz import gettz
@@ -53,3 +55,9 @@ def to_local(dt, tz=None, source_tz=None):
         tz = get_timezone(tz)
 
         return dt.astimezone(tz)
+
+
+def parse_date(string, tz=None):
+    dt = datetime.datetime.strptime(string, "%Y-%m-%d")
+    d = dt.date()
+    return d

@@ -41,15 +41,19 @@ def add_trello_quest_source(trello_id):
 
         board_id = form.board.data
         list_id = form.list.data
+        queue_list_id = form.queue_list.data
         board_display_name = session.get_board(board_id)["name"]
         list_display_name = session.get_list(list_id)["name"]
+        queue_list_display_name = session.get_list(queue_list_id)["name"]
 
         QuestSource.register(
             backend=trello,
             board_id=board_id,
             list_id=list_id,
+            queue_list_id=queue_list_id,
             board_display_name=board_display_name,
             list_display_name=list_display_name,
+            queue_list_display_name=queue_list_display_name,
         )
 
         return redirect(url_for("board.settings"))

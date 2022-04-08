@@ -1,0 +1,15 @@
+{
+  "background_color": "black",
+  "description": "Life quests manager",
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "static/images/icon.png",
+      "sizes": "160x160",
+      "type": "image/png"
+    }
+  ],
+  "name": "Life Scheduler",
+  "short_name": "LS",
+  "start_url": "/"
+}

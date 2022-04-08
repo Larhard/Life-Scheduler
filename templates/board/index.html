@@ -946,6 +946,7 @@
 
         function doRestoreWakeLock(data) {
             doRestoreWakeLockFromCookies(data)
+                .then(doSetWakeLock)
                 .then(doUpdateWakeLockToggle);
         }
 

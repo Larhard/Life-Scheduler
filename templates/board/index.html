@@ -119,6 +119,11 @@
                 .fail(doNotifyFailure);
         }
 
+        function doOnFocus() {
+            return doSetWakeLock()
+                .then(doSoftPull);
+        }
+
         function doSoftPull() {
             let date = new Date();
             date.setMilliseconds(date.getMilliseconds() - softPullInterval);
@@ -886,21 +891,17 @@
         }
 
         function doUpdateWakeLock(data) {
-            let value = wakeLockToggle.prop("checked");
+            wakeLockEnabled = wakeLockToggle.prop("checked");
 
-            if (wakeLockEnabled == value) {
-                return doNothing();
-            }
-
-            return doSetWakeLock(value)
+            return doSetWakeLock()
                 .then(doStoreWakeLockInCookies);
         }
 
         async function doSetWakeLock(value) {
             let deferred = $.Deferred();
 
-            if (value) {
-                if (wakeLock === undefined) {
+            if (wakeLockEnabled) {
+                if (wakeLock === undefined || wakeLock.released) {
                     wakeLock = await navigator.wakeLock.request('screen');
                 }
             } else {
@@ -910,8 +911,6 @@
                     });
                 }
             }
-
-            wakeLockEnabled = value;
 
             deferred.resolve(wakeLockEnabled);
             return deferred;
@@ -984,7 +983,7 @@
             setInterval(doPull, autoPullInterval);
             setInterval(doUpdateClock, 1000);
             setInterval(doUpdateQuestSoon, questSoonUpdateInterval);
-            window.onfocus = doSoftPull;
+            window.onfocus = doOnFocus;
         });
     </script>
 {% endblock %}

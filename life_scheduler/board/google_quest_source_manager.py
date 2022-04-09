@@ -1,11 +1,11 @@
 import json
-from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta, date
 
 from life_scheduler import db
 from life_scheduler.board.models import Quest
 from life_scheduler.board.quest_source_manager import QuestSourceManager
 from life_scheduler.google.models import Google
-from life_scheduler.time import to_utc, to_utc_date
+from life_scheduler.time import to_utc, to_utc_date, sanitize_datetime
 
 
 class GoogleQuestSourceManager(QuestSourceManager):
@@ -13,6 +13,8 @@ class GoogleQuestSourceManager(QuestSourceManager):
     calendar_display_name = None
 
     next_day_pull_time = "20:00"
+
+    supports_postpone = True
 
     def pull(self):
         backend: Google = self.source.get_backend()
@@ -58,8 +60,8 @@ class GoogleQuestSourceManager(QuestSourceManager):
 
             start_data = event.get("start")
             if start_data:
-                # start_timezone = start_data.get("timeZone")  # TODO clarify what the timezone means
-                start_timezone = None
+                start_timezone = start_data.get("timeZone") or "UTC"
+
                 if "date" in start_data:
                     quest_dict["start_date"] = to_utc_date(start_data["date"], start_timezone)
 
@@ -68,8 +70,7 @@ class GoogleQuestSourceManager(QuestSourceManager):
 
             end_data = event.get("end")
             if end_data:
-                # end_timezone = end_data.get("timeZone")  # TODO clarify what the timezone means
-                end_timezone = None
+                end_timezone = end_data.get("timeZone") or "UTC"
 
                 if "date" in end_data:
                     quest_dict["end_date"] = to_utc_date(end_data["date"], end_timezone)
@@ -107,6 +108,20 @@ class GoogleQuestSourceManager(QuestSourceManager):
     def set_quest_done(self, quest, value):
         quest.is_done = value
         db.session.commit()
+
+    def set_quest_postponed_date(self, quest, target_date):
+        assert(isinstance(target_date, date))
+
+        now = to_utc(datetime.utcnow())
+        target_time = now.time()
+        if quest.start_date is not None:
+            target_time = quest.start_time
+
+        print(quest.start_date)
+        print(quest.start_time)
+        print(quest.end_date)
+        print(quest.end_time)
+
 
     def get_quest_source_url(self, quest):
         if quest.extra:

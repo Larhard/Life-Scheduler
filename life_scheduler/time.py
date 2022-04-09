@@ -4,7 +4,7 @@ import dateutil.parser
 
 from dateutil.tz import gettz
 
-TZ_UTC = gettz("utc")
+TZ_UTC = gettz("UTC")
 
 
 def sanitize_timezone(tz):
@@ -20,7 +20,7 @@ def sanitize_datetime(dt, tz=None):
     if isinstance(dt, str):
         dt = dateutil.parser.parse(dt)
 
-    if tz is not None:
+    if isinstance(dt, (datetime.datetime, datetime.time)) and tz is not None:
         dt = dt.replace(tzinfo=tz)
 
     return dt
@@ -45,7 +45,7 @@ def to_utc(dt, tz=None):
 
 def to_utc_date(dt, tz=None):
     if dt is not None:
-        dt = to_utc(dt)
+        dt = to_utc(dt, tz)
         return dt.date()
 
 
@@ -54,7 +54,15 @@ def to_local(dt, tz=None, source_tz=None):
         dt = sanitize_datetime(dt, source_tz)
         tz = get_timezone(tz)
 
-        return dt.astimezone(tz)
+        if isinstance(dt, datetime.datetime):
+            dt = dt.astimezone(tz)
+        elif isinstance(dt, datetime.time):
+            today = datetime.date.today()
+            dt = datetime.datetime.combine(today, dt)
+            dt = dt.astimezone(tz)
+            dt = dt.time()
+
+        return dt
 
 
 def parse_date(string, tz=None):

@@ -20,7 +20,7 @@ class QuestSourceManager:
     def set_quest_done(self, quest, value):
         raise NotImplementedError()
 
-    def set_quest_postponed_date(self, quest, value):
+    def set_quest_postponed_date(self, quest, date):
         raise NotImplementedError()
 
     def get_quest_source_url(self, quest):

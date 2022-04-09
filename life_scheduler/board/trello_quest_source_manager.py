@@ -5,7 +5,7 @@ import dateutil.parser
 from life_scheduler import db
 from life_scheduler.board.models import Quest
 from life_scheduler.board.quest_source_manager import QuestSourceManager
-from life_scheduler.time import to_utc, sanitize_datetime
+from life_scheduler.time import to_utc, TZ_UTC
 from life_scheduler.trello.models import Trello
 
 
@@ -28,7 +28,7 @@ class TrelloQuestSourceManager(QuestSourceManager):
         new_quests = [
             {
                 "name": quest["name"],
-                "deadline": sanitize_datetime(quest["due"]) if quest["due"] else None,
+                "deadline": to_utc(quest["due"]) if quest["due"] else None,
                 "user": backend.user,
                 "source": self.source,
                 "external_id": quest["id"],
@@ -66,13 +66,13 @@ class TrelloQuestSourceManager(QuestSourceManager):
         backend: Trello = self.source.get_backend()
         session = backend.get_session()
 
-        now = to_utc(datetime.datetime.utcnow())
+        now = datetime.datetime.utcnow()
         time = now.time()
         if quest.deadline is not None:
-            time = to_utc(quest.deadline).time()
+            time = quest.deadline.time()
 
         target_datetime = datetime.datetime.combine(date, time)
-        target_datetime = sanitize_datetime(target_datetime)
+        target_datetime = target_datetime
         target_datetime_str = target_datetime.isoformat() + "Z"
 
         session.update_card(

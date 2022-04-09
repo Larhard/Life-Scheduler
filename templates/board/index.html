@@ -615,6 +615,8 @@
             const questId = parseQuestIdentifier(questItem.attr("id"));
             const url = "{{ url_for("board_api.quests", quest_id="QUEST_ID") }}".replace("QUEST_ID", questId);
 
+            questItem.addClass("quest-postponed")
+
             let postponedDate = getFutureDate(data.value)
 
             let postponedDateString = formatDate(postponedDate)

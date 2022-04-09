@@ -619,9 +619,6 @@
 
             let postponedDateString = formatDate(postponedDate)
 
-            console.log(postponedDate);
-            console.log(postponedDateString);
-
             return $.post(url, {postponed_date: postponedDateString});
         }
 

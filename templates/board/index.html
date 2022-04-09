@@ -316,19 +316,35 @@
 
             {% if "FEATURE_POSTPONE" is active_feature %}
                 if (data.supports_postpone) {
-                    output = `<span class="quest-item-button"><a class="quest-item-postpone-button">⏰</a></span>`
+                    output = `<span class="quest-item-button">
+                        <a class="quest-item-postpone-toggle"
+                            data-toggle="collapse"
+                            data-target="#quest-item-postpone-dialog-${data.id}"
+                            role="button"
+                        >⏰</a>
+                    </span>`
                 }
             {% endif %}
 
             return output
         }
 
-        function formatPostponeSelectSection(data) {
+        function formatPostponeDialog(data) {
             let output = ``
 
             {% if "FEATURE_POSTPONE" is active_feature %}
                 if (data.supports_postpone) {
-                    output = `<div class="col-sm-12">Mon Tue Wed</div>`
+                    output = `<div id="quest-item-postpone-dialog-${data.id}" class="quest-item-dialog collapse col-sm-12 container-fluid">
+                        <div class="row">
+                            {% for day in ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Day", "Week", "Month"] %}
+                                <div class="col-md-2 col-3 p-1 quest-item-postpone-button-container">
+                                    <a class="btn btn-primary btn-block quest-item-postpone-button" role="button">
+                                        {{day}}
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>`
                 }
             {% endif %}
 
@@ -342,7 +358,7 @@
             let questLabels = formatQuestBodyQuestLabels(data);
             let sourceUrl = formatQuestBodySourceUrl(data);
             let postponeButton = formatPostponeButton(data);
-            let postponeSelectSection = formatPostponeSelectSection(data);
+            let postponeSelectSection = formatPostponeDialog(data);
 
             return `<div class="row"><div class="col-sm-12">${date} ${name} ${sourceUrl} ${sourceLabels} ${postponeButton} ${questLabels}</div>${postponeSelectSection}</div>`;
         }
@@ -530,18 +546,24 @@
         }
 
         function doQuestPostpone() {
-            let questItem = $(this).parent().parent().parent().parent();
+            let value = $(this).text().trim();
+            let questItem = $(this).parent().parent().parent().parent().parent();
 
-            return doQuestCheckDone(questItem)
+            let request = {
+                questItem: questItem,
+                value: value,
+            }
+
+            return doQuestCheckDone(request)
                 .then(doQuestUpdateServerPostponedStatus)
                 .then(doPull)
                 .fail(doNotifyFailure);
         }
 
-        function doQuestCheckDone(questItem) {
+        function doQuestCheckDone(data) {
             let deferred = $.Deferred();
 
-            const doneFlag = questItem.hasClass("quest-done");
+            const doneFlag = data.questItem.hasClass("quest-done");
 
             if (doneFlag) {
                 deferred.reject({
@@ -551,18 +573,54 @@
                 return deferred;
             }
 
-            deferred.resolve(questItem);
+            deferred.resolve(data);
             return deferred;
         }
 
-        function doQuestUpdateServerPostponedStatus(questItem) {
+        function getFutureDate(identifier) {
+            let date = new Date();
+            let diff;
+
+            const weekDays = {
+                Mon: 1,
+                Tue: 2,
+                Wed: 3,
+                Thu: 4,
+                Fri: 5,
+                Sat: 6,
+                Sun: 7,
+            };
+
+            const periods = {
+                Day: 1,
+                Week: 7,
+                Month: 30,
+            };
+
+            if (weekDays[identifier] !== undefined) {
+                let target = weekDays[identifier];
+                let start = date.getDay();
+                diff = (target - start + 7 + 6) % 7 + 1;
+            } else {
+                diff = periods[identifier];
+            }
+
+            date.setDate(date.getDate() + diff);
+
+            return date;
+        }
+
+        function doQuestUpdateServerPostponedStatus(data) {
+            const questItem = data.questItem
             const questId = parseQuestIdentifier(questItem.attr("id"));
             const url = "{{ url_for("board_api.quests", quest_id="QUEST_ID") }}".replace("QUEST_ID", questId);
 
-            let postponedDate = new Date();
-            postponedDate.setDate(postponedDate.getDate() + 1);
+            let postponedDate = getFutureDate(data.value)
 
             let postponedDateString = formatDate(postponedDate)
+
+            console.log(postponedDate);
+            console.log(postponedDateString);
 
             return $.post(url, {postponed_date: postponedDateString});
         }
@@ -968,6 +1026,7 @@
         wakeLockToggle.on("change", doUpdateWakeLock);
         $(document).on("click", ".quest-item", doToggleDone);
         $(document).on("click", ".quest-item-button", doStopPropagation);
+        $(document).on("click", ".quest-item-dialog", doStopPropagation);
         $(document).on("click", ".quest-item-postpone-button", doQuestPostpone);
 
         questList.sortable({

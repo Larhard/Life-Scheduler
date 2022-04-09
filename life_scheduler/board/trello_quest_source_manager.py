@@ -5,7 +5,7 @@ import dateutil.parser
 from life_scheduler import db
 from life_scheduler.board.models import Quest
 from life_scheduler.board.quest_source_manager import QuestSourceManager
-from life_scheduler.time import to_utc
+from life_scheduler.time import to_utc, sanitize_datetime
 from life_scheduler.trello.models import Trello
 
 
@@ -28,7 +28,7 @@ class TrelloQuestSourceManager(QuestSourceManager):
         new_quests = [
             {
                 "name": quest["name"],
-                "deadline": to_utc(quest["due"]) if quest["due"] else None,
+                "deadline": sanitize_datetime(quest["due"]) if quest["due"] else None,
                 "user": backend.user,
                 "source": self.source,
                 "external_id": quest["id"],
@@ -60,15 +60,24 @@ class TrelloQuestSourceManager(QuestSourceManager):
         quest.is_done = value
         db.session.commit()
 
-    def set_quest_postponed_date(self, quest, value):
-        assert(isinstance(value, datetime.date))
+    def set_quest_postponed_date(self, quest, date):
+        assert(isinstance(date, datetime.date))
 
         backend: Trello = self.source.get_backend()
         session = backend.get_session()
 
+        now = to_utc(datetime.datetime.utcnow())
+        time = now.time()
+        if quest.deadline is not None:
+            time = to_utc(quest.deadline).time()
+
+        target_datetime = datetime.datetime.combine(date, time)
+        target_datetime = sanitize_datetime(target_datetime)
+        target_datetime_str = target_datetime.isoformat() + "Z"
+
         session.update_card(
             quest.external_id,
-            due=value.isoformat(),
+            due=target_datetime_str,
             idList=self.queue_list_id,
         )
 

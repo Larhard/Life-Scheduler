@@ -1,3 +1,5 @@
+import json
+
 from urllib.parse import quote
 
 
@@ -11,6 +13,22 @@ class GoogleAPISession:
         response = self.raw_session.get(
             f"{self.BASE_URL}{path}",
             params=kwargs
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def put(self, path, **kwargs):
+        response = self.raw_session.put(
+            f"{self.BASE_URL}{path}",
+            json=kwargs
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def patch(self, path, **kwargs):
+        response = self.raw_session.patch(
+            f"{self.BASE_URL}{path}",
+            json=kwargs
         )
         response.raise_for_status()
         return response.json()
@@ -38,3 +56,6 @@ class GoogleAPISession:
 
     def get_calendar_colors(self, **kwargs):
         return self.get("/calendar/v3/colors", **kwargs)
+
+    def update_event(self, calendar_id, event_id, **kwargs):
+        return self.patch(f"/calendar/v3/calendars/{calendar_id}/events/{event_id}", **kwargs)

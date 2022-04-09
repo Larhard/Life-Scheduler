@@ -112,16 +112,39 @@ class GoogleQuestSourceManager(QuestSourceManager):
     def set_quest_postponed_date(self, quest, target_date):
         assert(isinstance(target_date, date))
 
-        now = to_utc(datetime.utcnow())
-        target_time = now.time()
-        if quest.start_date is not None:
-            target_time = quest.start_time
+        diff = target_date - quest.start_date
+        target_end_date = quest.end_date + diff
 
-        print(quest.start_date)
-        print(quest.start_time)
-        print(quest.end_date)
-        print(quest.end_time)
+        kwargs = {
+            "start": {},
+            "end": {},
+        }
 
+        if quest.start_time is None:  # all-day event
+            kwargs["start"]["date"] = target_date.isoformat()
+            kwargs["end"]["date"] = target_end_date.isoformat()
+        else:
+            target_start_datetime = datetime.combine(target_date, quest.start_time)
+            target_end_datetime = datetime.combine(target_end_date, quest.end_time)
+
+            kwargs["start"]["dateTime"] = target_start_datetime.isoformat() + "Z"
+            kwargs["end"]["dateTime"] = target_end_datetime.isoformat() + "Z"
+
+        print(kwargs)
+
+        quest.start_date = None
+        quest.start_time = None
+        quest.end_date = None
+        quest.end_time = None
+        db.session.commit()
+
+        backend: Google = self.source.get_backend()
+        session = backend.get_session()
+
+        session.update_event(self.calendar_id, quest.external_id, **kwargs)
+
+        print(target_date)
+        print(target_end_date)
 
     def get_quest_source_url(self, quest):
         if quest.extra:

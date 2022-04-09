@@ -113,6 +113,7 @@
                 .then(doInvokeQuestPull)
                 .then(doRestoreQuestList)
                 .then(doUpdateQuestSoon)
+                .then(doClearPostponed)
                 .then(doFinishPull)
                 .then(doStoreQuestOrder)
                 .fail(doNotifyPullFailure)
@@ -624,6 +625,15 @@
             return $.post(url, {postponed_date: postponedDateString});
         }
 
+        function doClearPostponed(data) {
+            let deferred = $.Deferred();
+
+            $(".quest-postponed").removeClass("quest-postponed")
+
+            deferred.resolve(data);
+            return deferred;
+        }
+
         function getBatteryChargingIcon(charging) {
             if (charging) {
                 return batteryChargingIcon;
@@ -814,7 +824,11 @@
 
                         if (startDatetime < threshold) {
                             $(this).addClass("quest-soon");
+                        } else {
+                            $(this).removeClass("quest-soon")
                         }
+                    } else {
+                        $(this).removeClass("quest-soon")
                     }
                 }
             });

@@ -316,7 +316,7 @@
             let output = ``
 
             {% if "FEATURE_POSTPONE" is active_feature %}
-                if (data.supports_postpone) {
+                if (data.postponing_enabled) {
                     output = `<span class="quest-item-button">
                         <a class="quest-item-postpone-toggle"
                             data-toggle="collapse"
@@ -334,7 +334,7 @@
             let output = ``
 
             {% if "FEATURE_POSTPONE" is active_feature %}
-                if (data.supports_postpone) {
+                if (data.postponing_enabled) {
                     output = `<div id="quest-item-postpone-dialog-${data.id}" class="quest-item-dialog collapse col-sm-12 container-fluid">
                         <div class="row">
                             {% for day in ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Day", "Week", "Month"] %}

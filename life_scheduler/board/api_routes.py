@@ -5,6 +5,7 @@ from flask import Blueprint, request, abort, current_app
 from flask_login import login_required, current_user
 from flask_featureflags import is_active
 
+from constants import FEATURE_POSTPONE
 from life_scheduler.auth.utils import approval_required
 from life_scheduler.board.models import Quest, ImageGraphSource, QuestOrder
 from life_scheduler.time import parse_date
@@ -34,7 +35,7 @@ def quests_today():
     ]
 
     if is_active("FEATURE_POSTPONE"):
-        attrs.append("supports_postpone")
+        attrs.append("postponing_enabled")
 
     dumped_quests = list(map(partial(dump_attrs, attrs), quests))
 
@@ -64,7 +65,7 @@ def quests(quest_id):
         if "is_done" in request.form:
             is_done = bool(json.loads(request.form["is_done"]))
             quest.set_done(is_done)
-        if is_active("FEATURE_POSTPONE"):
+        if is_active(FEATURE_POSTPONE):
             if "postponed_date" in request.form:
                 postponed_date = parse_date(request.form["postponed_date"])
                 quest.set_postponed_date(postponed_date)

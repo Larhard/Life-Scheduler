@@ -127,8 +127,11 @@ class Quest(db.Model):
 
     @property
     def supports_postpone(self):
-        manager = self.source.get_manager()
-        return manager.supports_postpone
+        return self.source.supports_postpone
+
+    @property
+    def postponing_enabled(self):
+        return self.source.supports_postpone and self.source.postponing_enabled
 
     @start_datetime.setter
     def start_datetime(self, value):
@@ -214,6 +217,7 @@ class QuestSource(db.Model):
     label_bg_color = db.Column(db.Unicode(128), default="gray")
 
     blacklist = db.Column(db.UnicodeText)
+    postponing_enabled = db.Column(db.Boolean, default=False)
 
     def __init__(
             self,
@@ -273,6 +277,13 @@ class QuestSource(db.Model):
 
     def set_blacklist(self, value):
         self.blacklist = value
+        db.session.commit()
+
+    def set_postponing_enabled(self, value):
+        if not self.supports_postpone:
+            value = False
+
+        self.postponing_enabled = value
         db.session.commit()
 
     def validate_quest_dict(self, quest_dict):

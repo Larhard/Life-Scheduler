@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, abort
 from flask_login import login_required, current_user
+from flask_featureflags import is_active
 
+from constants import FEATURE_POSTPONE
 from life_scheduler.auth.utils import approval_required
 from life_scheduler.board.forms import AddTrelloQuestSourceForm, AddImageGraphSourceForm, AddGoogleQuestSourceForm, \
     EditQuestSourceForm
@@ -73,7 +75,6 @@ def remove_quest_source(source_id):
     QuestSource.remove(source)
     return redirect(url_for("board.settings"))
 
-
 @blueprint.route("/settings/edit_quest_source/<source_id>/", methods=["GET", "POST"])
 @login_required
 @approval_required
@@ -91,12 +92,21 @@ def edit_quest_source(source_id):
         source.set_label_bg_color(form.label_bg_color.data)
         source.set_blacklist(form.blacklist.data)
 
+        if is_active(FEATURE_POSTPONE):
+            source.set_postponing_enabled(form.enable_postponing.data)
+
         return redirect(url_for("board.settings"))
 
     form.label_name.data = source.label_name
     form.label_fg_color.data = source.label_fg_color
     form.label_bg_color.data = source.label_bg_color
     form.blacklist.data = source.blacklist
+    if is_active(FEATURE_POSTPONE):
+        if source.supports_postpone:
+            form.enable_postponing.data = source.postponing_enabled
+        else:
+            form.enable_postponing.data = False
+            form.enable_postponing.disabled = True
 
     return render_template("board/edit_quest_source.html", form=form)
 
